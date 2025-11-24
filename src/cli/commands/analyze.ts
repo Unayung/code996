@@ -110,7 +110,7 @@ export class AnalyzeExecutor {
       spinner.render()
 
       // 步骤2: 資料解析與驗證
-      const shouldEnableHoliday = shouldEnableHolidayMode(rawData, options)
+      const shouldEnableHoliday = shouldEnableHolidayMode(options)
       const parsedData = await GitParser.parseGitData(
         rawData,
         options.hours,
@@ -501,12 +501,11 @@ function printResults(
 
 /**
  * 判斷是否應該啟用節假日調休模式
- * @param rawData Git資料
  * @param options 使用者選項
  * @returns 是否啟用及原因
  */
-function shouldEnableHolidayMode(rawData: GitLogData, options: AnalyzeOptions): { enabled: boolean; reason: string } {
-  // 如果使用者強制開啟，直接啟用
+function shouldEnableHolidayMode(options: AnalyzeOptions): { enabled: boolean; reason: string } {
+  // 只有在使用者明確使用 --cn 参數時才啟用
   if (options.cn) {
     return {
       enabled: true,
@@ -514,22 +513,7 @@ function shouldEnableHolidayMode(rawData: GitLogData, options: AnalyzeOptions): 
     }
   }
 
-  // 檢測主要時區是否為 +0800
-  if (rawData.timezoneData && rawData.timezoneData.timezones.length > 0) {
-    // 找到占比最高的時區
-    const dominantTimezone = rawData.timezoneData.timezones[0]
-    const dominantRatio = dominantTimezone.count / rawData.timezoneData.totalCommits
-
-    // 如果主要時區是 +0800 且占比超過 50%
-    if (dominantTimezone.offset === '+0800' && dominantRatio >= 0.5) {
-      return {
-        enabled: true,
-        reason: `原因：檢測到主要時區為 +0800 (占比 ${(dominantRatio * 100).toFixed(1)}%)`,
-      }
-    }
-  }
-
-  // 預設不啟用
+  // 預設不啟用（固定週休二日）
   return {
     enabled: false,
     reason: '',

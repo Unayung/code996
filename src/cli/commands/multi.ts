@@ -28,15 +28,11 @@ import { printTeamAnalysis } from './report/printers/user-analysis-printer'
 
 /**
  * 判斷是否應該啟用節假日調休模式
- * @param rawData Git資料
  * @param options 使用者選項
  * @returns 是否啟用及原因
  */
-function shouldEnableHolidayMode(
-  rawData: GitLogData,
-  options: AnalyzeOptions
-): { enabled: boolean; reason: string } {
-  // 如果使用者強制開啟，直接啟用
+function shouldEnableHolidayMode(options: AnalyzeOptions): { enabled: boolean; reason: string } {
+  // 只有在使用者明確使用 --cn 参數時才啟用
   if (options.cn) {
     return {
       enabled: true,
@@ -44,22 +40,7 @@ function shouldEnableHolidayMode(
     }
   }
 
-  // 檢測主要時區是否為 +0800
-  if (rawData.timezoneData && rawData.timezoneData.timezones.length > 0) {
-    // 找到占比最高的時區
-    const dominantTimezone = rawData.timezoneData.timezones[0]
-    const dominantRatio = dominantTimezone.count / rawData.timezoneData.totalCommits
-
-    // 如果主要時區是 +0800 且占比超過 50%
-    if (dominantTimezone.offset === '+0800' && dominantRatio >= 0.5) {
-      return {
-        enabled: true,
-        reason: `原因：檢測到主要時區為 +0800 (占比 ${(dominantRatio * 100).toFixed(1)}%)`,
-      }
-    }
-  }
-
-  // 預設不啟用
+  // 預設不啟用（固定週休二日）
   return {
     enabled: false,
     reason: '',
@@ -210,7 +191,7 @@ export class MultiExecutor {
           dataList.push(data)
 
           // 為每個儲存庫計算 996 指數（用於後續對比表）
-          const shouldEnableHoliday2 = shouldEnableHolidayMode(data, options) // 本地變數以避免混淆
+          const shouldEnableHoliday2 = shouldEnableHolidayMode(options) // 本地變數以避免混淆
           const parsedData = await GitParser.parseGitData(
             data,
             options.hours,
@@ -273,7 +254,7 @@ export class MultiExecutor {
 
       // ========== 步骤 5: 分析合併後的資料 ==========
       const spinner3 = ora('📈 正在計算996指數...').start()
-      const shouldEnableHoliday3 = shouldEnableHolidayMode(mergedData, options) // 本地變數以避免混淆
+      const shouldEnableHoliday3 = shouldEnableHolidayMode(options) // 本地變數以避免混淆
       const parsedData = await GitParser.parseGitData(
         mergedData,
         options.hours,
