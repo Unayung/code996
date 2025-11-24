@@ -1,4 +1,4 @@
-# code996
+# code996 繁體中文版
 
 code996 是一個分析工具，它可以統計 Git 專案的 commit 時間分布，進而推導出專案的編碼工作強度。
 
@@ -6,7 +6,9 @@ code996 是一個分析工具，它可以統計 Git 專案的 commit 時間分�
 
 <!-- 繁體中文 | [English](./README-en_US.md) -->
 
-> 該專案為 Node.js 新版本，功能更強大，舊版本已遷移至 [code996-web](https://github.com/hellodigua/code996-web)。
+> 📦 **npm 套件**: [`@unayung/code996`](https://www.npmjs.com/package/@unayung/code996)
+> 🙏 **感謝原作者**: 本專案基於 [hellodigua/code996](https://github.com/hellodigua/code996) 開發，並轉換為繁體中文（台灣用語）版本
+> ✨ **新增功能**: 支援 `--author` 參數，可指定分析特定作者的提交記錄
 
 ## 它的用途
 
@@ -14,7 +16,7 @@ code996 是一個分析工具，它可以統計 Git 專案的 commit 時間分�
 
 但是程式碼的提交時間不會騙人，因此就有了這個工具。
 
-當你入職新公司，跑一下 `npx code996`，就可以看到資料背後的真相，從而判斷這家公司的真實加班文化。
+當你入職新公司，跑一下 `npx @unayung/code996`，就可以看到資料背後的真相，從而判斷這家公司的真實加班文化。
 
 與其痛苦三個月，不如早點看清真相！別等到試用期結束才後悔！
 
@@ -51,14 +53,14 @@ code996 是一個分析工具，它可以統計 Git 專案的 commit 時間分�
 
 ```bash
 # 在當前儲存庫或儲存庫上級目錄執行（預設查詢以上次提交為終點開始365天的commit）
-npx code996
+npx @unayung/code996
 ```
 
 你也可以選擇安裝後再使用，這樣就不用每次都重新下載：
 
 ```bash
 # 全域安裝
-npm i -g code996
+npm i -g @unayung/code996
 
 # 使用
 code996
@@ -73,10 +75,10 @@ code996 會根據上下文自動選擇最合適的分析模式：
 
 ```bash
 # 智慧檢測，自動選擇分析模式
-code996                    # 智慧檢測目前環境
-code996 /path/to/repo      # 分析指定儲存庫
-code996 /proj1 /proj2      # 自動進入多儲存庫模式
-code996 /workspace         # 自動掃描子目錄
+npx @unayung/code996                    # 智慧檢測目前環境
+npx @unayung/code996 /path/to/repo      # 分析指定儲存庫
+npx @unayung/code996 /proj1 /proj2      # 自動進入多儲存庫模式
+npx @unayung/code996 /workspace         # 自動掃描子目錄
 ```
 
 ## 📖 詳細使用說明
@@ -109,47 +111,47 @@ code996 /workspace         # 自動掃描子目錄
 
 ```bash
 # ===== 單儲存庫分析（智慧模式） =====
-code996                        # 分析目前儲存庫（最近一年）
-code996 /path/to/repo          # 分析指定儲存庫
-code996 -y 2025                # 分析2025年
-code996 -y 2023-2025           # 分析2023-2025年
-code996 --all-time             # 查詢整個儲存庫歷史
-code996 --self                 # 只分析目前使用者的提交
-code996 --self -y 2025         # 分析自己在2025年的提交
+npx @unayung/code996                        # 分析目前儲存庫（最近一年）
+npx @unayung/code996 /path/to/repo          # 分析指定儲存庫
+npx @unayung/code996 -y 2025                # 分析2025年
+npx @unayung/code996 -y 2023-2025           # 分析2023-2025年
+npx @unayung/code996 --all-time             # 查詢整個儲存庫歷史
+npx @unayung/code996 --self                 # 只分析目前使用者的提交
+npx @unayung/code996 --self -y 2025         # 分析自己在2025年的提交
 
 # ===== 多儲存庫分析（智慧自動檢測） =====
-code996                        # 如果子目錄有多個儲存庫，自動進入多儲存庫模式
-code996 /path/proj1 /path/proj2  # 傳入多個路徑，自動分析多個儲存庫
-code996 /workspace             # 掃描指定目錄的所有子儲存庫
-code996 /workspace -y 2025     # 分析2025年的資料和趨勢
-code996 --self                 # 只統計目前使用者在所有儲存庫中的提交
+npx @unayung/code996                        # 如果子目錄有多個儲存庫，自動進入多儲存庫模式
+npx @unayung/code996 /path/proj1 /path/proj2  # 傳入多個路徑，自動分析多個儲存庫
+npx @unayung/code996 /workspace             # 掃描指定目錄的所有子儲存庫
+npx @unayung/code996 /workspace -y 2025     # 分析2025年的資料和趨勢
+npx @unayung/code996 --self                 # 只統計目前使用者在所有儲存庫中的提交
 
 # 精細分析（半小時粒度）
-code996 --half-hour            # 以半小時粒度展示時間分布
-code996 -y 2025 --half-hour    # 結合年份分析，精細展示
-code996 /proj1 /proj2 --half-hour  # 多儲存庫分析，半小時粒度展示
+npx @unayung/code996 --half-hour            # 以半小時粒度展示時間分布
+npx @unayung/code996 -y 2025 --half-hour    # 結合年份分析，精細展示
+npx @unayung/code996 /proj1 /proj2 --half-hour  # 多儲存庫分析，半小時粒度展示
 
 # 跨時區專案分析
-code996 --timezone="+0800"     # 只分析東八區（中國）的提交
-code996 --timezone="-0700"     # 只分析西七區（美國西海岸）的提交
-code996 -y 2025 --timezone="+0800"  # 分析2025年特定時區的提交
+npx @unayung/code996 --timezone="+0800"     # 只分析東八區（中國）的提交
+npx @unayung/code996 --timezone="-0700"     # 只分析西七區（美國西海岸）的提交
+npx @unayung/code996 -y 2025 --timezone="+0800"  # 分析2025年特定時區的提交
 
 # 中國節假日調休分析
-code996                        # 系統自動檢測主要時區為 +0800 時，會自動啟用節假日調休
-code996 --cn                   # 手動強制開啟節假日調休模式（適用於非 +0800 時區專案）
-code996 --timezone="-0700" --cn # 分析非中國時區專案，但需要按中國節假日調休判斷
+npx @unayung/code996                        # 系統自動檢測主要時區為 +0800 時，會自動啟用節假日調休
+npx @unayung/code996 --cn                   # 手動強制開啟節假日調休模式（適用於非 +0800 時區專案）
+npx @unayung/code996 --timezone="-0700" --cn # 分析非中國時區專案，但需要按中國節假日調休判斷
 
 # 指定特定作者分析
-code996 --author "john"                          # 只分析 john 的提交
-code996 --author "john|mary"                     # 只分析 john 或 mary 的提交
-code996 --author "john" -y 2025                  # 分析 john 在 2025 年的提交
+npx @unayung/code996 --author "john"                          # 只分析 john 的提交
+npx @unayung/code996 --author "john|mary"                     # 只分析 john 或 mary 的提交
+npx @unayung/code996 --author "john" -y 2025                  # 分析 john 在 2025 年的提交
 
 # 過濾雜訊資料（排除 CI/CD 機器人、合併提交等）
-code996 --ignore-author "bot"                    # 排除所有包含 "bot" 的作者
-code996 --ignore-author "bot|jenkins|github-actions"  # 排除多個作者（使用 | 分隔）
-code996 --ignore-msg "^Merge"                    # 排除所有以 "Merge" 開頭的提交訊息
-code996 --ignore-msg "merge|lint|format"         # 排除多個關鍵字
-code996 -y 2025 --ignore-author "renovate|dependabot" --ignore-msg "^Merge" # 綜合過濾
+npx @unayung/code996 --ignore-author "bot"                    # 排除所有包含 "bot" 的作者
+npx @unayung/code996 --ignore-author "bot|jenkins|github-actions"  # 排除多個作者（使用 | 分隔）
+npx @unayung/code996 --ignore-msg "^Merge"                    # 排除所有以 "Merge" 開頭的提交訊息
+npx @unayung/code996 --ignore-msg "merge|lint|format"         # 排除多個關鍵字
+npx @unayung/code996 -y 2025 --ignore-author "renovate|dependabot" --ignore-msg "^Merge" # 綜合過濾
 ```
 
 **常見排除情境**：
@@ -238,12 +240,30 @@ Git 儲存庫 → git log 採集 → 日級首提 + 小時分布 → 分位數�
 
 接下來的功能都會沿著 WLB 和工作避坑的路線來開發，包括：更精細的加班比例分析、以及分析程式碼的屎山指數（複雜度分析），畢竟維護屎山也是導致 996 的罪魁禍首之一。
 
-## 關於 AI
+## 🙏 致謝
 
-🤖 **AI 協作夥伴注意**：本專案採用標準化的 AI 協作流程，詳情請查看 [.docs/README.md](.docs/README.md) 中的協作規範。
+### 原作者
+- 本專案基於 [hellodigua/code996](https://github.com/hellodigua/code996) 開發
+- 感謝原作者 [@hellodigua](https://github.com/hellodigua) 創建了這個優秀的工具
 
-特別鳴謝：本專案使用 KwaiKAT 的 [KAT-Coder-Pro V1](https://streamlake.com/product/kat-coder) 進行開發，感謝 KwaiKAT 提供的免費 token。
+### 繁體中文版維護
+- 維護者：[@unayung](https://github.com/unayung)
+- npm 套件：[@unayung/code996](https://www.npmjs.com/package/@unayung/code996)
+- GitHub：[unayung/code996](https://github.com/unayung/code996)
+
+### 主要變更
+- ✨ 全面轉換為繁體中文（台灣用語）
+- 🎯 新增 `--author` 參數，支援指定作者分析
+- 📦 發佈為 npm 套件，方便使用
+
+### AI 開發工具
+本繁體中文版使用 Claude Code 進行開發。
 
 ## 📄 授權條款
 
 MIT License
+
+---
+
+**原專案**: [hellodigua/code996](https://github.com/hellodigua/code996)
+**繁體中文版**: [@unayung/code996](https://www.npmjs.com/package/@unayung/code996)
