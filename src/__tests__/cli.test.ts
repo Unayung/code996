@@ -29,21 +29,21 @@ describe('CLIManager', () => {
     it('should handle analyze command with default options', async () => {
       cli.parse(['node', 'code996', 'analyze'])
 
-      expect(consoleSpy).toHaveBeenCalledWith('分析仓库: .')
-      expect(consoleSpy).toHaveBeenCalledWith('分析完成！ (此功能将在后续阶段实现)')
+      expect(consoleSpy).toHaveBeenCalledWith('分析儲存庫: .')
+      expect(consoleSpy).toHaveBeenCalledWith('分析完成！ (此功能將在後續阶段實現)')
     })
 
     it('should handle analyze command with custom path', async () => {
       cli.parse(['node', 'code996', 'analyze', '/test/path'])
 
-      expect(consoleSpy).toHaveBeenCalledWith('分析仓库: /test/path')
+      expect(consoleSpy).toHaveBeenCalledWith('分析儲存庫: /test/path')
     })
 
     it('should handle analyze command with debug mode', async () => {
       cli.parse(['node', 'code996', 'analyze', '--debug'])
 
-      expect(consoleSpy).toHaveBeenCalledWith('调试模式开启')
-      expect(consoleSpy).toHaveBeenCalledWith('参数:')
+      expect(consoleSpy).toHaveBeenCalledWith('除錯模式開啟')
+      expect(consoleSpy).toHaveBeenCalledWith('参數:')
     })
   })
 
@@ -63,7 +63,7 @@ describe('CLIManager', () => {
 
       cli.parse(['node', 'code996', 'unknown'])
 
-      expect(consoleSpy).toHaveBeenCalledWith("错误: 未知命令 'unknown'")
+      expect(consoleSpy).toHaveBeenCalledWith("錯誤: 未知命令 'unknown'")
       expect(exitSpy).toHaveBeenCalledWith(1)
 
       exitSpy.mockRestore()

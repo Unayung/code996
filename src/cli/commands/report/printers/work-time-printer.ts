@@ -6,35 +6,35 @@ import { formatStartClock, formatEndClock } from '../../../../utils/formatter'
 const MAX_STANDARD_WORK_HOURS = 9
 
 /**
- * 工作时间打印器
- * 负责打印工作时间推测和相关说明
+ * 工作時間打印器
+ * 負責打印工作時間推測和相關說明
  */
 
-/** 打印上班与下班时间的推测信息 */
+/** 打印上班與下班時間的推測資訊 */
 export function printWorkTimeSummary(parsedData: ParsedGitData): void {
   const detection = parsedData.detectedWorkTime
   if (!detection) {
-    console.log(chalk.cyan.bold('⌛ 工作时间推测:'))
-    console.log('暂无可用的工作时间推测数据')
+    console.log(chalk.cyan.bold('⌛ 工作時間推測:'))
+    console.log('暫無可用的工作時間推測資料')
     console.log()
     return
   }
 
   if (detection.detectionMethod === 'manual') {
-    // 用户已通过 --hours 指定标准工时，这里直接跳过推测模块以避免重复信息
+    // 使用者已通過 --hours 指定標準工時，這裡直接跳過推測模块以避免重复資訊
     printWorkHourCapNotice(detection)
     return
   }
 
-  // 如果置信度低于40%，不显示工作时间推测（但仍然显示加班说明）
+  // 如果置信度低于40%，不顯示工作時間推測（但仍然顯示加班說明）
   if (detection.confidence < 40) {
     printWorkHourCapNotice(detection)
     return
   }
 
-  // 只在自动推断场景展示该模块，因此固定输出自动提示
-  const titleSuffix = chalk.gray('（自动推断）')
-  console.log(chalk.cyan.bold('⌛ 工作时间推测:') + ' ' + titleSuffix)
+  // 只在自動推斷场景展示該模块，因此固定輸出自動提示
+  const titleSuffix = chalk.gray('（自動推斷）')
+  console.log(chalk.cyan.bold('⌛ 工作時間推測:') + ' ' + titleSuffix)
 
   const startClock = formatStartClock(detection)
   const endClock = formatEndClock(detection)
@@ -44,17 +44,17 @@ export function printWorkTimeSummary(parsedData: ParsedGitData): void {
 
   workTimeTable.push(
     [
-      { content: chalk.bold('上班时间'), colSpan: 1 },
+      { content: chalk.bold('上班時間'), colSpan: 1 },
       { content: startClock, colSpan: 1 },
     ],
     [
-      { content: chalk.bold('下班时间'), colSpan: 1 },
+      { content: chalk.bold('下班時間'), colSpan: 1 },
       { content: endClock, colSpan: 1 },
     ],
     [
       { content: chalk.bold('置信度'), colSpan: 1 },
       {
-        content: `${detection.confidence}%（样本天数: ${detection.sampleCount >= 0 ? detection.sampleCount : '手动'}）`,
+        content: `${detection.confidence}%（樣本天數: ${detection.sampleCount >= 0 ? detection.sampleCount : '手动'}）`,
         colSpan: 1,
       },
     ]
@@ -66,7 +66,7 @@ export function printWorkTimeSummary(parsedData: ParsedGitData): void {
   printWorkHourCapNotice(detection)
 }
 
-// 当推测/指定的工作时段超过 9 小时时，告知用户超出的部分已按加班计算
+// 當推測/指定的工作時段超過 9 小時時，告知使用者超出的部分已按加班計算
 function printWorkHourCapNotice(detection: ParsedGitData['detectedWorkTime']): void {
   if (!detection) {
     return
@@ -80,7 +80,7 @@ function printWorkHourCapNotice(detection: ParsedGitData['detectedWorkTime']): v
   const spanText = actualSpan.toFixed(1)
   console.log(
     chalk.yellow(
-      `⚠️  加班判定说明：推测的平均工作时长约为 ${spanText} 小时，指数计算仅将前9小时视为正常工时，超出时段已按加班统计。`
+      `⚠️  加班判定說明：推測的平均工作時长約為 ${spanText} 小時，指數計算僅將前9小時视為正常工時，超出時段已按加班統計。`
     )
   )
   console.log()

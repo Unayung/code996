@@ -4,23 +4,23 @@ import { execSync } from 'child_process'
 import { RepoInfo } from '../types/git-types'
 
 /**
- * 需要忽略的目录列表
+ * 需要忽略的目錄列表
  */
 const IGNORED_DIRS = new Set(['node_modules', '.git', '.next', '.turbo', 'dist', 'build', '.cache', 'coverage'])
 
 /**
- * 仓库扫描器
- * 用于扫描目录中的所有 Git 仓库
+ * 儲存庫掃描器
+ * 用於掃描目錄中的所有 Git 儲存庫
  */
 export class RepoScanner {
   /**
-   * 扫描多个目录，返回所有找到的 Git 仓库
-   * @param dirs 要扫描的目录列表
-   * @returns 去重后的仓库列表
+   * 掃描多個目錄，傳回所有找到的 Git 儲存庫
+   * @param dirs 要掃描的目錄列表
+   * @returns 去重後的儲存庫列表
    */
   static async scan(dirs: string[]): Promise<RepoInfo[]> {
     const results: RepoInfo[] = []
-    const seen = new Set<string>() // 用于去重
+    const seen = new Set<string>() // 用於去重
 
     for (const dir of dirs) {
       const absoluteDir = path.resolve(dir)
@@ -38,9 +38,9 @@ export class RepoScanner {
   }
 
   /**
-   * 扫描指定目录的直接子目录，查找 Git 仓库
-   * @param baseDir 基础目录
-   * @returns 找到的仓库列表
+   * 掃描指定目錄的直接子目錄，查找 Git 儲存庫
+   * @param baseDir 基礎目錄
+   * @returns 找到的儲存庫列表
    */
   static async scanSubdirectories(baseDir: string): Promise<RepoInfo[]> {
     let entries: fs.Dirent[] = []
@@ -63,12 +63,12 @@ export class RepoScanner {
   }
 
   /**
-   * 扫描单个目录及其子目录（一层）
-   * @param baseDir 要扫描的目录
-   * @returns 找到的仓库列表
+   * 掃描單個目錄及其子目錄（一層）
+   * @param baseDir 要掃描的目錄
+   * @returns 找到的儲存庫列表
    */
   private static async scanSingleDir(baseDir: string): Promise<RepoInfo[]> {
-    // 检查目录是否存在且为目录
+    // 檢查目錄是否存在且為目錄
     try {
       const stat = await fs.promises.stat(baseDir)
       if (!stat.isDirectory()) {
@@ -80,7 +80,7 @@ export class RepoScanner {
 
     const directRepos: RepoInfo[] = []
 
-    // 检查当前目录是否就是一个 Git 仓库
+    // 檢查目前目錄是否就是一個 Git 儲存庫
     if (await this.isGitRepo(baseDir)) {
       directRepos.push({
         name: path.basename(baseDir),
@@ -88,7 +88,7 @@ export class RepoScanner {
       })
     }
 
-    // 扫描一层子目录
+    // 掃描一層子目錄
     let entries: fs.Dirent[] = []
     try {
       entries = await fs.promises.readdir(baseDir, { withFileTypes: true })
@@ -118,15 +118,15 @@ export class RepoScanner {
   }
 
   /**
-   * 检查目录是否为 Git 仓库
+   * 檢查目錄是否為 Git 儲存庫
    */
   private static async isGitRepo(dir: string): Promise<boolean> {
     try {
-      // 方法1：检查 .git 目录
+      // 方法1：檢查 .git 目錄
       await fs.promises.access(path.join(dir, '.git'))
       return true
     } catch {
-      // 方法2：使用 git 命令检查
+      // 方法2：使用 git 命令檢查
       try {
         execSync('git rev-parse --is-inside-work-tree', { cwd: dir, stdio: 'ignore' })
         return true
@@ -137,7 +137,7 @@ export class RepoScanner {
   }
 
   /**
-   * 解析 Git 仓库的根目录
+   * 解析 Git 儲存庫的根目錄
    */
   private static async resolveGitRoot(dir: string): Promise<string> {
     try {

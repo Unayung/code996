@@ -2,16 +2,16 @@ import { spawn } from 'child_process'
 import { GitLogOptions } from '../../types/git-types'
 
 /**
- * 基础Git命令执行器
- * 提供Git命令执行、仓库验证和通用过滤功能
+ * 基礎Git命令執行器
+ * 提供Git命令執行、儲存庫驗證和通用過濾功能
  */
 export class BaseCollector {
   /**
-   * 执行git命令并返回输出
+   * 執行git命令並傳回輸出
    */
   protected async execGitCommand(args: string[], cwd: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      // 确保路径是绝对路径
+      // 確保路徑是絕對路徑
       const absolutePath = require('path').resolve(cwd)
 
       const child = spawn('git', args, {
@@ -40,18 +40,18 @@ export class BaseCollector {
         if (code === 0) {
           resolve(stdout)
         } else {
-          reject(new Error(`Git命令执行失败 (退出码: ${code}): ${stderr}`))
+          reject(new Error(`Git命令執行失敗 (退出碼: ${code}): ${stderr}`))
         }
       })
 
       child.on('error', (err) => {
-        reject(new Error(`无法执行git命令: ${err.message}`))
+        reject(new Error(`無法執行git命令: ${err.message}`))
       })
     })
   }
 
   /**
-   * 检查是否为有效的Git仓库
+   * 檢查是否為有效的Git儲存庫
    */
   async isValidGitRepo(path: string): Promise<boolean> {
     try {
@@ -63,10 +63,10 @@ export class BaseCollector {
   }
 
   /**
-   * 为 git 命令附加通用过滤条件（时间范围、作者包含、消息排除）
+   * 為 git 命令附加通用過濾條件（時間範圍、作者包含、消息排除）
    */
   protected applyCommonFilters(args: string[], options: GitLogOptions): void {
-    // 默认忽略合并提交
+    // 預設忽略合併提交
     args.push('--no-merges')
 
     if (options.since) {
@@ -90,7 +90,7 @@ export class BaseCollector {
   }
 
   /**
-   * 解析 format-local 输出的时间戳，提取日期和小时信息
+   * 解析 format-local 輸出的時間戳，提取日期和小時資訊
    */
   protected parseLocalTimestamp(timestamp: string): { dateKey: string; hour: number; minute: number } | null {
     const match = timestamp.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/)
@@ -114,7 +114,7 @@ export class BaseCollector {
   }
 
   /**
-   * 读取 git config 配置项（不存在时返回 null）
+   * 讀取 git config 配置項（不存在時傳回 null）
    */
   private async getGitConfigValue(key: string, path: string): Promise<string | null> {
     try {
@@ -127,27 +127,27 @@ export class BaseCollector {
   }
 
   /**
-   * 转义正则特殊字符，构造安全的 --author 匹配模式
+   * 轉義正則特殊字符，建構安全的 --author 匹配模式
    */
   private escapeAuthorPattern(source: string): string {
     return source.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   }
 
   /**
-   * 根据 CLI 选项解析作者身份，生成正则用于 git --author 过滤
+   * 根據 CLI 選項解析作者身份，生成正則用於 git --author 過濾
    */
   async resolveSelfAuthor(path: string): Promise<{ pattern: string; displayLabel: string }> {
     const email = await this.getGitConfigValue('user.email', path)
     const name = await this.getGitConfigValue('user.name', path)
 
     if (!email && !name) {
-      throw new Error('启用 --self 需要先配置 git config user.name 或 user.email')
+      throw new Error('啟用 --self 需要先配置 git config user.name 或 user.email')
     }
 
     const hasEmail = Boolean(email)
     const hasName = Boolean(name)
 
-    const displayLabel = hasEmail && hasName ? `${name} <${email}>` : email || name || '未知用户'
+    const displayLabel = hasEmail && hasName ? `${name} <${email}>` : email || name || '未知使用者'
 
     const pattern = hasEmail ? this.escapeAuthorPattern(email!) : this.escapeAuthorPattern(name!)
 
@@ -158,10 +158,10 @@ export class BaseCollector {
   }
 
   /**
-   * 检查作者是否应该被排除（用于后处理过滤）
-   * @param authorLine git log 输出的作者行，格式: "Author Name <email@example.com>"
-   * @param ignorePattern 排除作者的正则表达式
-   * @returns true 表示应该排除，false 表示保留
+   * 檢查作者是否應該被排除（用於後處理過濾）
+   * @param authorLine git log 輸出的作者行，格式: "Author Name <email@example.com>"
+   * @param ignorePattern 排除作者的正則表達式
+   * @returns true 表示應該排除，false 表示保留
    */
   protected shouldIgnoreAuthor(authorLine: string, ignorePattern?: string): boolean {
     if (!ignorePattern) {
@@ -169,11 +169,11 @@ export class BaseCollector {
     }
 
     try {
-      const regex = new RegExp(ignorePattern, 'i') // 不区分大小写
+      const regex = new RegExp(ignorePattern, 'i') // 不區分大小寫
       return regex.test(authorLine)
     } catch (error) {
-      // 如果正则表达式无效，打印警告并不排除
-      console.warn(`警告: 无效的作者排除正则表达式 "${ignorePattern}": ${(error as Error).message}`)
+      // 如果正則表達式無效，打印警告並不排除
+      console.warn(`警告: 無效的作者排除正則表達式 "${ignorePattern}": ${(error as Error).message}`)
       return false
     }
   }

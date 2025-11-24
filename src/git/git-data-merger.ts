@@ -8,18 +8,18 @@ import {
 } from '../types/git-types'
 
 /**
- * Git 数据合并器
- * 负责将多个仓库的 GitLogData 合并为一个统一的数据集
+ * Git 資料合併器
+ * 負責將多個儲存庫的 GitLogData 合併為一個統一的資料集
  */
 export class GitDataMerger {
   /**
-   * 合并多个仓库的 Git 数据
-   * @param dataList 多个仓库的 GitLogData 数组
-   * @returns 合并后的 GitLogData
+   * 合併多個儲存庫的 Git 資料
+   * @param dataList 多個儲存庫的 GitLogData 陣列
+   * @returns 合併後的 GitLogData
    */
   static merge(dataList: GitLogData[]): GitLogData {
     if (dataList.length === 0) {
-      throw new Error('数据列表为空，无法合并')
+      throw new Error('資料列表為空，無法合併')
     }
 
     if (dataList.length === 1) {
@@ -34,24 +34,24 @@ export class GitDataMerger {
       dayHourCommits: this.mergeDayHourCommits(dataList),
       dailyLatestCommits: this.mergeDailyLatestCommits(dataList),
       dailyCommitHours: this.mergeDailyCommitHours(dataList),
-      granularity: 'half-hour', // 合并后保持半小时粒度
+      granularity: 'half-hour', // 合併後保持半小時粒度
     }
   }
 
   /**
-   * 合并按半小时统计的数据（48个半小时点）
+   * 合併按半小時統計的資料（48個半小時點）
    */
   private static mergeByHour(dataList: GitLogData[]): TimeCount[] {
     const halfHourMap = new Map<string, number>()
 
-    // 初始化 48 个半小时点
+    // 初始化 48 個半小時點
     for (let i = 0; i < 24; i++) {
       const hour = i.toString().padStart(2, '0')
       halfHourMap.set(`${hour}:00`, 0)
       halfHourMap.set(`${hour}:30`, 0)
     }
 
-    // 累加各仓库的数据
+    // 累加各儲存庫的資料
     for (const data of dataList) {
       for (const item of data.byHour) {
         const current = halfHourMap.get(item.time) || 0
@@ -59,7 +59,7 @@ export class GitDataMerger {
       }
     }
 
-    // 转换为数组（保持顺序）
+    // 轉換為陣列（保持順序）
     const result: TimeCount[] = []
     for (let i = 0; i < 24; i++) {
       const hour = i.toString().padStart(2, '0')
@@ -77,7 +77,7 @@ export class GitDataMerger {
   }
 
   /**
-   * 合并按星期统计的数据（周一到周日）
+   * 合併按星期統計的資料（週一到週日）
    */
   private static mergeByDay(dataList: GitLogData[]): TimeCount[] {
     const dayMap = new Map<string, number>()
@@ -87,7 +87,7 @@ export class GitDataMerger {
       dayMap.set(i.toString(), 0)
     }
 
-    // 累加各仓库的数据
+    // 累加各儲存庫的資料
     for (const data of dataList) {
       for (const item of data.byDay) {
         const current = dayMap.get(item.time) || 0
@@ -95,7 +95,7 @@ export class GitDataMerger {
       }
     }
 
-    // 转换为数组
+    // 轉換為陣列
     const result: TimeCount[] = []
     for (let i = 1; i <= 7; i++) {
       result.push({
@@ -108,15 +108,15 @@ export class GitDataMerger {
   }
 
   /**
-   * 合并总提交数
+   * 合併總提交數
    */
   private static mergeTotalCommits(dataList: GitLogData[]): number {
     return dataList.reduce((sum, data) => sum + data.totalCommits, 0)
   }
 
   /**
-   * 合并每日首次提交时间
-   * 策略：对于同一天，取所有仓库中最早的提交时间
+   * 合併每日首次提交時間
+   * 策略：對於同一天，取所有儲存庫中最早的提交時間
    */
   private static mergeDailyFirstCommits(dataList: GitLogData[]): DailyFirstCommit[] | undefined {
     const dailyMap = new Map<string, number>()
@@ -147,8 +147,8 @@ export class GitDataMerger {
   }
 
   /**
-   * 合并每日最晚提交时间
-   * 策略：对于同一天，取所有仓库中最晚的提交时间
+   * 合併每日最晚提交時間
+   * 策略：對於同一天，取所有儲存庫中最晚的提交時間
    */
   private static mergeDailyLatestCommits(dataList: GitLogData[]): DailyLatestCommit[] | undefined {
     const dailyMap = new Map<string, number>()
@@ -179,8 +179,8 @@ export class GitDataMerger {
   }
 
   /**
-   * 合并按星期和小时的提交统计
-   * 策略：累加相同 (weekday, hour) 组合的提交数
+   * 合併按星期和小時的提交統計
+   * 策略：累加相同 (weekday, hour) 組合的提交數
    */
   private static mergeDayHourCommits(dataList: GitLogData[]): DayHourCommit[] | undefined {
     const map = new Map<string, number>()
@@ -211,8 +211,8 @@ export class GitDataMerger {
   }
 
   /**
-   * 合并每日提交小时列表
-   * 策略：对于同一天，合并所有仓库的提交小时集合（取并集）
+   * 合併每日提交小時列表
+   * 策略：對於同一天，合併所有儲存庫的提交小時集合（取並集）
    */
   private static mergeDailyCommitHours(dataList: GitLogData[]): DailyCommitHours[] | undefined {
     const dailyMap = new Map<string, Set<number>>()

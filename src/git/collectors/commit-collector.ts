@@ -9,30 +9,30 @@ import {
 import { BaseCollector } from './base-collector'
 
 /**
- * 提交详情数据采集器
- * 负责采集每日首末提交、按星期和小时的提交分布等
+ * 提交詳情資料採集器
+ * 負責採集每日首末提交、按星期和小時的提交分布等
  */
 export class CommitCollector extends BaseCollector {
   /**
-   * 按星期几和小时统计commit数据
+   * 按星期幾和小時統計commit資料
    */
   async getCommitsByDayAndHour(options: GitLogOptions): Promise<DayHourCommit[]> {
     const { path } = options
 
-    // 格式: "Author Name <email@example.com>|D H|ISO_TIMESTAMP" (D=星期几 0-6，H=小时)
+    // 格式: "Author Name <email@example.com>|D H|ISO_TIMESTAMP" (D=星期幾 0-6，H=小時)
     const args = ['log', '--format=%an <%ae>|%cd|%ai', '--date=format-local:%w %H']
     this.applyCommonFilters(args, options)
 
     const output = await this.execGitCommand(args, path)
     const lines = output.split('\n').filter((line) => line.trim())
 
-    // 统计每个 weekday+hour 组合的提交数
+    // 統計每個 weekday+hour 組合的提交數
     const commitMap = new Map<string, number>()
 
     for (const line of lines) {
       const trimmed = line.trim()
 
-      // 分离作者、时间数据和ISO时间戳
+      // 分离作者、時間資料和ISO時間戳
       const parts = trimmed.split('|')
       if (parts.length < 3) {
         continue
@@ -42,12 +42,12 @@ export class CommitCollector extends BaseCollector {
       const timeData = parts[1]
       const isoTimestamp = parts[2]
 
-      // 检查是否应该排除此作者
+      // 檢查是否應該排除此作者
       if (this.shouldIgnoreAuthor(author, options.ignoreAuthor)) {
         continue
       }
 
-      // 时区过滤
+      // 時區過濾
       if (options.timezone) {
         const timezoneMatch = isoTimestamp.match(/([+-]\d{4})$/)
         if (!timezoneMatch || timezoneMatch[1] !== options.timezone) {
@@ -62,7 +62,7 @@ export class CommitCollector extends BaseCollector {
         const hour = parseInt(timeParts[1], 10)
 
         if (!isNaN(dayW) && !isNaN(hour) && dayW >= 0 && dayW <= 6 && hour >= 0 && hour <= 23) {
-          // 转换：%w 的 0(周日) -> 7, 1-6 -> 1-6
+          // 轉換：%w 的 0(週日) -> 7, 1-6 -> 1-6
           const weekday = dayW === 0 ? 7 : dayW
           const key = `${weekday}-${hour}`
           commitMap.set(key, (commitMap.get(key) || 0) + 1)
@@ -70,7 +70,7 @@ export class CommitCollector extends BaseCollector {
       }
     }
 
-    // 转换为数组格式
+    // 轉換為陣列格式
     const result: DayHourCommit[] = []
     commitMap.forEach((count, key) => {
       const [weekday, hour] = key.split('-').map((v) => parseInt(v, 10))
@@ -81,7 +81,7 @@ export class CommitCollector extends BaseCollector {
   }
 
   /**
-   * 获取每日最早的提交时间（分钟数表示）
+   * 獲取每日最早的提交時間（分鐘數表示）
    */
   async getDailyFirstCommits(options: GitLogOptions): Promise<DailyFirstCommit[]> {
     const { path } = options
@@ -101,7 +101,7 @@ export class CommitCollector extends BaseCollector {
         continue
       }
 
-      // 分离作者、时间和ISO时间戳
+      // 分离作者、時間和ISO時間戳
       const parts = trimmed.split('|')
       if (parts.length < 3) {
         continue
@@ -111,12 +111,12 @@ export class CommitCollector extends BaseCollector {
       const timestamp = parts[1]
       const isoTimestamp = parts[2]
 
-      // 检查是否应该排除此作者
+      // 檢查是否應該排除此作者
       if (this.shouldIgnoreAuthor(author, options.ignoreAuthor)) {
         continue
       }
 
-      // 时区过滤
+      // 時區過濾
       if (options.timezone) {
         const timezoneMatch = isoTimestamp.match(/([+-]\d{4})$/)
         if (!timezoneMatch || timezoneMatch[1] !== options.timezone) {
@@ -146,8 +146,8 @@ export class CommitCollector extends BaseCollector {
   }
 
   /**
-   * 获取每日最晚的提交时间
-   * 注意：凌晨0:00-6:00的提交会被归入前一天，因为这通常是前一天工作的延续
+   * 獲取每日最晚的提交時間
+   * 注意：凌晨0:00-6:00的提交會被歸入前一天，因為这通常是前一天工作的延續
    */
   async getDailyLatestCommits(options: GitLogOptions): Promise<DailyLatestCommit[]> {
     const { path } = options
@@ -167,7 +167,7 @@ export class CommitCollector extends BaseCollector {
         continue
       }
 
-      // 分离作者、时间和ISO时间戳
+      // 分离作者、時間和ISO時間戳
       const parts = trimmed.split('|')
       if (parts.length < 3) {
         continue
@@ -177,12 +177,12 @@ export class CommitCollector extends BaseCollector {
       const timestamp = parts[1]
       const isoTimestamp = parts[2]
 
-      // 检查是否应该排除此作者
+      // 檢查是否應該排除此作者
       if (this.shouldIgnoreAuthor(author, options.ignoreAuthor)) {
         continue
       }
 
-      // 时区过滤
+      // 時區過濾
       if (options.timezone) {
         const timezoneMatch = isoTimestamp.match(/([+-]\d{4})$/)
         if (!timezoneMatch || timezoneMatch[1] !== options.timezone) {
@@ -198,19 +198,19 @@ export class CommitCollector extends BaseCollector {
       let effectiveDate = parsed.dateKey
       let effectiveMinutes = parsed.hour * 60 + parsed.minute
 
-      // 如果是凌晨0:00-6:00的提交，归入前一天
-      // 这些提交通常是前一天加班的延续
+      // 如果是凌晨0:00-6:00的提交，歸入前一天
+      // 這些提交通常是前一天加班的延續
       if (parsed.hour >= 0 && parsed.hour < 6) {
         const date = new Date(`${parsed.dateKey}T00:00:00`)
         date.setDate(date.getDate() - 1)
         effectiveDate = this.formatDateKey(date)
-        // 分钟数需要加24小时，表示次日凌晨
+        // 分鐘數需要加24小時，表示次日凌晨
         effectiveMinutes = effectiveMinutes + 24 * 60
       }
 
       const current = dailyLatest.get(effectiveDate)
 
-      // 保存最晚的分钟数
+      // 保存最晚的分鐘數
       if (current === undefined || effectiveMinutes > current) {
         dailyLatest.set(effectiveDate, effectiveMinutes)
       }
@@ -225,7 +225,7 @@ export class CommitCollector extends BaseCollector {
   }
 
   /**
-   * 格式化日期为 YYYY-MM-DD
+   * 格式化日期為 YYYY-MM-DD
    */
   private formatDateKey(date: Date): string {
     const year = date.getFullYear()
@@ -235,7 +235,7 @@ export class CommitCollector extends BaseCollector {
   }
 
   /**
-   * 获取每日所有提交的小时列表
+   * 獲取每日所有提交的小時列表
    */
   async getDailyCommitHours(options: GitLogOptions): Promise<DailyCommitHours[]> {
     const { path } = options
@@ -255,7 +255,7 @@ export class CommitCollector extends BaseCollector {
         continue
       }
 
-      // 分离作者、时间和ISO时间戳
+      // 分离作者、時間和ISO時間戳
       const parts = trimmed.split('|')
       if (parts.length < 3) {
         continue
@@ -265,12 +265,12 @@ export class CommitCollector extends BaseCollector {
       const timestamp = parts[1]
       const isoTimestamp = parts[2]
 
-      // 检查是否应该排除此作者
+      // 檢查是否應該排除此作者
       if (this.shouldIgnoreAuthor(author, options.ignoreAuthor)) {
         continue
       }
 
-      // 时区过滤
+      // 時區過濾
       if (options.timezone) {
         const timezoneMatch = isoTimestamp.match(/([+-]\d{4})$/)
         if (!timezoneMatch || timezoneMatch[1] !== options.timezone) {
@@ -298,8 +298,8 @@ export class CommitCollector extends BaseCollector {
   }
 
   /**
-   * 获取每日提交数
-   * @returns 每天的提交数列表（date: YYYY-MM-DD, count: 提交数）
+   * 獲取每日提交數
+   * @returns 每天的提交數列表（date: YYYY-MM-DD, count: 提交數）
    */
   async getDailyCommitCounts(options: GitLogOptions): Promise<DailyCommitCount[]> {
     const { path } = options
@@ -319,7 +319,7 @@ export class CommitCollector extends BaseCollector {
         continue
       }
 
-      // 分离作者、日期和ISO时间戳
+      // 分离作者、日期和ISO時間戳
       const parts = trimmed.split('|')
       if (parts.length < 3) {
         continue
@@ -329,12 +329,12 @@ export class CommitCollector extends BaseCollector {
       const date = parts[1].trim()
       const isoTimestamp = parts[2]
 
-      // 检查是否应该排除此作者
+      // 檢查是否應該排除此作者
       if (this.shouldIgnoreAuthor(author, options.ignoreAuthor)) {
         continue
       }
 
-      // 时区过滤
+      // 時區過濾
       if (options.timezone) {
         const timezoneMatch = isoTimestamp.match(/([+-]\d{4})$/)
         if (!timezoneMatch || timezoneMatch[1] !== options.timezone) {
@@ -342,7 +342,7 @@ export class CommitCollector extends BaseCollector {
         }
       }
 
-      // 验证日期格式 (YYYY-MM-DD)
+      // 驗證日期格式 (YYYY-MM-DD)
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         continue
       }

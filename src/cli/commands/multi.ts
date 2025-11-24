@@ -27,39 +27,39 @@ import { printTrendReport } from './report/trend-printer'
 import { printTeamAnalysis } from './report/printers/user-analysis-printer'
 
 /**
- * 判断是否应该启用节假日调休模式
- * @param rawData Git数据
- * @param options 用户选项
- * @returns 是否启用及原因
+ * 判斷是否應該啟用節假日調休模式
+ * @param rawData Git資料
+ * @param options 使用者選項
+ * @returns 是否啟用及原因
  */
 function shouldEnableHolidayMode(
   rawData: GitLogData,
   options: AnalyzeOptions
 ): { enabled: boolean; reason: string } {
-  // 如果用户强制开启，直接启用
+  // 如果使用者強制開啟，直接啟用
   if (options.cn) {
     return {
       enabled: true,
-      reason: '原因：用户通过 --cn 参数强制开启',
+      reason: '原因：使用者通過 --cn 参數強制開啟',
     }
   }
 
-  // 检测主要时区是否为 +0800
+  // 檢測主要時區是否為 +0800
   if (rawData.timezoneData && rawData.timezoneData.timezones.length > 0) {
-    // 找到占比最高的时区
+    // 找到占比最高的時區
     const dominantTimezone = rawData.timezoneData.timezones[0]
     const dominantRatio = dominantTimezone.count / rawData.timezoneData.totalCommits
 
-    // 如果主要时区是 +0800 且占比超过 50%
+    // 如果主要時區是 +0800 且占比超過 50%
     if (dominantTimezone.offset === '+0800' && dominantRatio >= 0.5) {
       return {
         enabled: true,
-        reason: `原因：检测到主要时区为 +0800 (占比 ${(dominantRatio * 100).toFixed(1)}%)`,
+        reason: `原因：檢測到主要時區為 +0800 (占比 ${(dominantRatio * 100).toFixed(1)}%)`,
       }
     }
   }
 
-  // 默认不启用
+  // 預設不啟用
   return {
     enabled: false,
     reason: '',
@@ -67,28 +67,28 @@ function shouldEnableHolidayMode(
 }
 
 /**
- * 多仓库分析执行器
- * 负责多仓库分析的整体流程（智能模式的一部分）
+ * 多儲存庫分析執行器
+ * 負責多儲存庫分析的整體流程（智慧模式的一部分）
  */
 export class MultiExecutor {
   /**
-   * 执行多仓库分析
-   * @param inputDirs 用户指定的目录列表（为空则扫描当前目录的子目录）
-   * @param options 分析选项
-   * @param preScannedRepos 可选：已经扫描好的仓库列表（智能模式使用）
+   * 執行多儲存庫分析
+   * @param inputDirs 使用者指定的目錄列表（為空則掃描目前目錄的子目錄）
+   * @param options 分析選項
+   * @param preScannedRepos 可選：已經掃描好的儲存庫列表（智慧模式使用）
    */
   static async execute(inputDirs: string[], options: AnalyzeOptions, preScannedRepos?: RepoInfo[]): Promise<void> {
     try {
-      // ========== 步骤 1: 扫描仓库 ==========
+      // ========== 步骤 1: 掃描儲存庫 ==========
       let repos: RepoInfo[]
 
       if (preScannedRepos && preScannedRepos.length > 0) {
-        // 使用已扫描的仓库列表（来自智能模式）
+        // 使用已掃描的儲存庫列表（來自智慧模式）
         repos = preScannedRepos
-        console.log(chalk.green(`✔ 已检测到 ${repos.length} 个候选仓库`))
+        console.log(chalk.green(`✔ 已檢測到 ${repos.length} 個候選儲存庫`))
       } else {
-        // 重新扫描
-        const spinner = ora('🔍 正在扫描 Git 仓库...').start()
+        // 重新掃描
+        const spinner = ora('🔍 正在掃描 Git 儲存庫...').start()
 
         try {
           if (inputDirs.length === 0) {
@@ -96,64 +96,69 @@ export class MultiExecutor {
           } else {
             repos = await RepoScanner.scan(inputDirs)
           }
-          spinner.succeed(`扫描完成，发现 ${repos.length} 个候选仓库`)
+          spinner.succeed(`掃描完成，发現 ${repos.length} 個候選儲存庫`)
         } catch (error) {
-          spinner.fail('扫描失败')
-          console.error(chalk.red('❌ 扫描失败:'), (error as Error).message)
+          spinner.fail('掃描失敗')
+          console.error(chalk.red('❌ 掃描失敗:'), (error as Error).message)
           return
         }
 
         if (repos.length === 0) {
-          console.log(chalk.yellow('⚠️ 未在提供的目录中找到 Git 仓库。'))
+          console.log(chalk.yellow('⚠️ 未在提供的目錄中找到 Git 儲存庫。'))
           return
         }
       }
 
-      console.log(chalk.gray(`可选择的仓库总数: ${repos.length} 个`))
+      console.log(chalk.gray(`可選擇的儲存庫總數: ${repos.length} 個`))
       console.log()
 
-      // ========== 步骤 2: 交互式选择仓库 ==========
+      // ========== 步骤 2: 交互式選擇儲存庫 ==========
       const selectedRepos = await promptRepoSelection(repos)
 
       if (selectedRepos.length === 0) {
-        console.log(chalk.yellow('⚠️ 未选择任何仓库，分析已取消。'))
+        console.log(chalk.yellow('⚠️ 未選擇任何儲存庫，分析已取消。'))
         return
       }
 
       console.log()
-      console.log(chalk.blue(`📦 开始分析 ${selectedRepos.length} 个仓库（串行执行）`))
+      console.log(chalk.blue(`📦 開始分析 ${selectedRepos.length} 個儲存庫（串行執行）`))
       console.log()
 
-      // 创建 collector 实例
+      // 创建 collector 實例
       const collector = new GitCollector()
 
-      // 解析作者过滤（如果启用 --self）
+      // 解析作者過濾（優先 --author，其次 --self）
       let authorPattern: string | undefined
-      if (options.self) {
+      if (options.author) {
+        authorPattern = options.author
+        console.log(chalk.blue('🙋 作者過濾:'), `僅包含作者: ${options.author}`)
+        console.log(chalk.gray('   將在所有儲存庫中只統計符合該模式的作者的提交'))
+        console.log()
+      } else if (options.self) {
         try {
           const authorInfo = await collector.resolveSelfAuthor(selectedRepos[0].path)
           authorPattern = authorInfo.pattern
-          console.log(chalk.blue('🙋 作者过滤:'), authorInfo.displayLabel)
-          console.log(chalk.gray('   将在所有仓库中只统计该作者的提交'))
+          console.log(chalk.blue('🙋 作者過濾:'), authorInfo.displayLabel)
+          console.log(chalk.gray('   將在所有儲存庫中只統計該作者的提交'))
           console.log()
         } catch (error) {
-          console.error(chalk.red('❌ 解析当前用户信息失败:'), (error as Error).message)
+          console.error(chalk.red('❌ 解析目前使用者資訊失敗:'), (error as Error).message)
           return
         }
       }
 
-      // 计算时间范围
+      // 計算時間範圍
       let effectiveSince: string | undefined
       let effectiveUntil: string | undefined
 
       if (options.allTime || options.year || options.since || options.until) {
-        // 用户明确指定了时间范围，使用指定的范围
+        // 使用者明确指定了時間範圍，使用指定的範圍
         const range = this.resolveTimeRange(options)
         effectiveSince = range.since
         effectiveUntil = range.until
       } else {
-        // 默认：找到所有仓库中最新的提交，从那个时间回溯 1 年
-        const spinner2 = ora('🔍 正在检测仓库时间范围...').start()
+        // 預設：找到所有儲存庫中最新的提交，從那個時間回溯 1 年
+        const spinner2 = ora('🔍 正在檢測儲存庫時間範圍...').start()
         try {
           const latestDate = await this.findLatestCommitDate(selectedRepos, collector)
           if (latestDate) {
@@ -164,25 +169,25 @@ export class MultiExecutor {
             effectiveSince = this.formatUTCDate(sinceDate)
             effectiveUntil = this.formatUTCDate(untilDate)
 
-            spinner2.succeed(`检测到最新提交: ${latestDate}`)
-            console.log(chalk.gray(`💡 提示: 默认从最新提交回溯 1 年，可使用 --all-time 或 -y 自定义`))
+            spinner2.succeed(`檢測到最新提交: ${latestDate}`)
+            console.log(chalk.gray(`💡 提示: 預設從最新提交回溯 1 年，可使用 --all-time 或 -y 自定義`))
           } else {
-            spinner2.warn('未能检测到提交，将使用所有时间')
+            spinner2.warn('未能檢測到提交，將使用所有時間')
           }
         } catch {
-          spinner2.warn('检测失败，将使用所有时间')
+          spinner2.warn('檢測失敗，將使用所有時間')
         }
       }
 
-      // 显示时间范围信息
+      // 顯示時間範圍資訊
       if (!effectiveSince && !effectiveUntil) {
-        console.log(chalk.blue('📅 分析时段: 所有时间'))
+        console.log(chalk.blue('📅 分析時段: 所有時間'))
       } else {
-        console.log(chalk.blue(`📅 分析时段: ${effectiveSince || '最早'} 至 ${effectiveUntil || '最新'}`))
+        console.log(chalk.blue(`📅 分析時段: ${effectiveSince || '最早'} 至 ${effectiveUntil || '最新'}`))
       }
       console.log()
 
-      // ========== 步骤 3: 批量采集数据 ==========
+      // ========== 步骤 3: 批量採集資料 ==========
       const dataList: GitLogData[] = []
       const repoRecords: RepoAnalysisRecord[] = []
 
@@ -198,14 +203,14 @@ export class MultiExecutor {
             since: effectiveSince,
             until: effectiveUntil,
             authorPattern,
-            timezone: options.timezone, // 添加时区过滤参数
+            timezone: options.timezone, // 添加時區過濾参數
             silent: true,
           })
 
           dataList.push(data)
 
-          // 为每个仓库计算 996 指数（用于后续对比表）
-          const shouldEnableHoliday2 = shouldEnableHolidayMode(data, options) // 本地变量以避免混淆
+          // 為每個儲存庫計算 996 指數（用於後續對比表）
+          const shouldEnableHoliday2 = shouldEnableHolidayMode(data, options) // 本地變數以避免混淆
           const parsedData = await GitParser.parseGitData(
             data,
             options.hours,
@@ -215,7 +220,7 @@ export class MultiExecutor {
           )
           const result = GitParser.calculate996Index(parsedData)
 
-          // 项目类型识别
+          // 專案類型識別
           const classification = ProjectClassifier.classify(data, parsedData)
 
           repoRecords.push({
@@ -226,9 +231,9 @@ export class MultiExecutor {
             classification,
           })
 
-          console.log(chalk.green(`    ✓ ${data.totalCommits} 个提交, 996指数: ${result.index996.toFixed(1)}`))
+          console.log(chalk.green(`    ✓ ${data.totalCommits} 個提交, 996指數: ${result.index996.toFixed(1)}`))
         } catch (error) {
-          console.error(chalk.red(`    ✗ 分析失败: ${(error as Error).message}`))
+          console.error(chalk.red(`    ✗ 分析失敗: ${(error as Error).message}`))
           repoRecords.push({
             repo,
             data: { byHour: [], byDay: [], totalCommits: 0 },
@@ -239,36 +244,36 @@ export class MultiExecutor {
         }
       }
 
-      // 过滤出成功的数据
+      // 過濾出成功的資料
       const successfulData = dataList.filter((_, index) => repoRecords[index].status === 'success')
 
       if (successfulData.length === 0) {
         console.log()
-        console.log(chalk.red('❌ 所有仓库分析均失败，无法生成汇总报告'))
+        console.log(chalk.red('❌ 所有儲存庫分析均失敗，無法生成彙總報告'))
         return
       }
 
       console.log()
-      console.log(chalk.green(`✓ 成功分析 ${successfulData.length}/${selectedRepos.length} 个仓库`))
+      console.log(chalk.green(`✓ 成功分析 ${successfulData.length}/${selectedRepos.length} 個儲存庫`))
       console.log()
 
-      // ========== 步骤 4: 合并数据 ==========
-      const spinner2 = ora('📊 正在合并数据...').start()
+      // ========== 步骤 4: 合併資料 ==========
+      const spinner2 = ora('📊 正在合併資料...').start()
       const mergedData = GitDataMerger.merge(successfulData)
-      spinner2.succeed('数据合并完成')
+      spinner2.succeed('資料合併完成')
       console.log()
 
-      // 显示时区过滤提示（如果有）
+      // 顯示時區過濾提示（如果有）
       if (options.timezone) {
-        console.log(chalk.blue('⚙️  时区过滤已启用'))
-        console.log(chalk.gray(`目标时区: ${options.timezone}`))
-        console.log(chalk.gray(`过滤后总提交数: ${mergedData.totalCommits}`))
+        console.log(chalk.blue('⚙️  時區過濾已啟用'))
+        console.log(chalk.gray(`目標時區: ${options.timezone}`))
+        console.log(chalk.gray(`過濾後總提交數: ${mergedData.totalCommits}`))
         console.log()
       }
 
-      // ========== 步骤 5: 分析合并后的数据 ==========
-      const spinner3 = ora('📈 正在计算996指数...').start()
-      const shouldEnableHoliday3 = shouldEnableHolidayMode(mergedData, options) // 本地变量以避免混淆
+      // ========== 步骤 5: 分析合併後的資料 ==========
+      const spinner3 = ora('📈 正在計算996指數...').start()
+      const shouldEnableHoliday3 = shouldEnableHolidayMode(mergedData, options) // 本地變數以避免混淆
       const parsedData = await GitParser.parseGitData(
         mergedData,
         options.hours,
@@ -280,92 +285,92 @@ export class MultiExecutor {
       spinner3.succeed('分析完成！')
       console.log()
 
-      // ========== 步骤 5.5: 检查是否有开源项目 ==========
+      // ========== 步骤 5.5: 檢查是否有開源專案 ==========
       const hasOpenSourceProject = repoRecords.some(
         (record) => record.classification && record.classification.projectType === ProjectType.OPEN_SOURCE
       )
 
-      // 如果有任意一个开源项目，显示项目类型对比表
+      // 如果有任意一個開源專案，顯示專案類型對比表
       if (hasOpenSourceProject) {
         this.printProjectTypeComparison(repoRecords)
       }
 
-      // ========== 步骤 6: 输出汇总结果 ==========
-      console.log(chalk.cyan.bold('📊 多仓库汇总分析报告:'))
+      // ========== 步骤 6: 輸出彙總結果 ==========
+      console.log(chalk.cyan.bold('📊 多儲存庫彙總分析報告:'))
       console.log()
 
-      // 显示节假日调休模式提示
+      // 顯示節假日調休模式提示
       if (shouldEnableHoliday3.enabled) {
-        console.log(chalk.blue('🇨🇳 已启用中国节假日调休判断'))
+        console.log(chalk.blue('🇨🇳 已啟用中國節假日調休判斷'))
         console.log(chalk.gray(`${shouldEnableHoliday3.reason}`))
         console.log()
       }
 
-      // 如果有开源项目，隐藏核心结果、详细分析和工作时间推测
+      // 如果有開源專案，隐藏核心結果、詳細分析和工作時間推測
       if (!hasOpenSourceProject) {
         printCoreResults(result, mergedData, options, effectiveSince, effectiveUntil)
         printDetailedAnalysis(result, parsedData)
         printWorkTimeSummary(parsedData)
       }
 
-      printTimeDistribution(parsedData, options.halfHour) // 传递半小时模式参数
+      printTimeDistribution(parsedData, options.halfHour) // 傳遞半小時模式参數
       printWeekdayOvertime(parsedData)
       printWeekendOvertime(parsedData)
       printLateNightAnalysis(parsedData)
 
-      // ========== 步骤 7: 输出各仓库对比表 ==========
+      // ========== 步骤 7: 輸出各儲存庫對比表 ==========
       MultiComparisonPrinter.print(repoRecords)
 
-      // ========== 步骤 8: 月度趋势分析（默认启用） ==========
+      // ========== 步骤 8: 月度趨勢分析（預設啟用） ==========
       if (selectedRepos.length > 0) {
         console.log()
-        const trendSpinner = ora('📈 正在进行多仓库汇总月度趋势分析...').start()
+        const trendSpinner = ora('📈 正在進行多儲存庫彙總月度趨勢分析...').start()
         try {
-          // 提取所有成功分析的仓库路径
+          // 提取所有成功分析的儲存庫路径
           const successfulRepoPaths = selectedRepos
             .filter((_, index) => repoRecords[index].status === 'success')
             .map((repo) => repo.path)
 
           if (successfulRepoPaths.length === 0) {
-            trendSpinner.warn('没有成功的仓库数据，跳过趋势分析')
+            trendSpinner.warn('沒有成功的儲存庫資料，跳過趨勢分析')
           } else {
-            // 使用新的多仓库汇总趋势分析方法
+            // 使用新的多儲存庫彙總趨勢分析方法
             const trendResult = await TrendAnalyzer.analyzeMultiRepoTrend(
               successfulRepoPaths,
               effectiveSince ?? null,
               effectiveUntil ?? null,
               authorPattern,
               (current, total, month) => {
-                // 实时更新进度
-                trendSpinner.text = `📈 正在分析月度趋势... (${current}/${total}: ${month})`
+                // 實時更新進度
+                trendSpinner.text = `📈 正在分析月度趨勢... (${current}/${total}: ${month})`
               },
-              options.timezone, // 传递时区过滤参数
-              shouldEnableHoliday3.enabled // 传递节假日调休模式参数
+              options.timezone, // 傳遞時區過濾参數
+              shouldEnableHoliday3.enabled // 傳遞節假日調休模式参數
             )
             trendSpinner.succeed()
             printTrendReport(trendResult)
           }
         } catch (error) {
-          trendSpinner.fail('趋势分析失败')
-          console.error(chalk.red('⚠️  趋势分析错误:'), (error as Error).message)
+          trendSpinner.fail('趨勢分析失敗')
+          console.error(chalk.red('⚠️  趨勢分析錯誤:'), (error as Error).message)
         }
       }
 
-      // ========== 步骤 9: 团队工作模式分析（聚合所有仓库的数据）==========
-      // 开源项目不显示团队工作模式分析
+      // ========== 步骤 9: 團隊工作模式分析（聚合所有儲存庫的資料）==========
+      // 開源專案不顯示團隊工作模式分析
       if (!hasOpenSourceProject && GitTeamAnalyzer.shouldAnalyzeTeam(options) && selectedRepos.length > 0) {
-        // 收集所有成功分析的仓库路径
+        // 蒐集所有成功分析的儲存庫路径
         const successfulRepoPaths = selectedRepos
           .filter((_, index) => repoRecords[index].status === 'success')
           .map((repo) => repo.path)
 
         if (successfulRepoPaths.length > 0) {
           console.log()
-          console.log(chalk.gray(`💡 聚合 ${successfulRepoPaths.length} 个仓库的数据进行团队工作模式分析`))
+          console.log(chalk.gray(`💡 聚合 ${successfulRepoPaths.length} 個儲存庫的資料進行團隊工作模式分析`))
 
           try {
             const collectOptions: GitLogOptions = {
-              path: '', // 多仓库模式下不需要单个path
+              path: '', // 多儲存庫模式下不需要單個path
               since: effectiveSince,
               until: effectiveUntil,
               authorPattern,
@@ -377,21 +382,21 @@ export class MultiExecutor {
             const teamAnalysis = await MultiRepoTeamAnalyzer.analyzeAggregatedTeam(
               successfulRepoPaths,
               collectOptions,
-              20, // minCommits（所有仓库总计≥20）
+              20, // minCommits（所有儲存庫總計≥20）
               maxUsers,
-              result.index996 // 整体996指数
+              result.index996 // 整體996指數
             )
 
             if (teamAnalysis) {
               printTeamAnalysis(teamAnalysis)
             }
           } catch (error) {
-            console.log(chalk.yellow('⚠️  团队分析失败:'), (error as Error).message)
+            console.log(chalk.yellow('⚠️  團隊分析失敗:'), (error as Error).message)
           }
         }
       }
 
-      // ========== 步骤 10: 检测跨时区并显示警告（如果未使用 --timezone 过滤）==========
+      // ========== 步骤 10: 檢測跨時區並顯示警告（如果未使用 --timezone 過濾）==========
       if (mergedData.timezoneData && !options.timezone) {
         const tzAnalysis = TimezoneAnalyzer.analyzeTimezone(mergedData.timezoneData, mergedData.byHour)
         if (tzAnalysis.isCrossTimezone) {
@@ -401,16 +406,16 @@ export class MultiExecutor {
         }
       }
     } catch (error) {
-      console.error(chalk.red('❌ 多仓库分析失败:'), (error as Error).message)
+      console.error(chalk.red('❌ 多儲存庫分析失敗:'), (error as Error).message)
       process.exit(1)
     }
   }
 
   /**
-   * 打印项目类型对比表格
+   * 打印專案類型對比表格
    */
   private static printProjectTypeComparison(repoRecords: RepoAnalysisRecord[]): void {
-    console.log(chalk.yellow.bold('🌍 项目类型检测结果'))
+    console.log(chalk.yellow.bold('🌍 專案類型檢測結果'))
     console.log()
 
     const terminalWidth = Math.min(getTerminalWidth(), 120)
@@ -418,11 +423,11 @@ export class MultiExecutor {
 
     // 表头
     typeTable.push([
-      { content: chalk.yellow(chalk.bold('仓库名称')), colSpan: 1 },
-      { content: chalk.yellow(chalk.bold('项目类型')), colSpan: 1 },
+      { content: chalk.yellow(chalk.bold('儲存庫名称')), colSpan: 1 },
+      { content: chalk.yellow(chalk.bold('專案類型')), colSpan: 1 },
     ])
 
-    // 数据行
+    // 資料行
     for (const record of repoRecords) {
       if (record.status === 'success' && record.classification) {
         const { projectType, confidence } = record.classification
@@ -431,13 +436,13 @@ export class MultiExecutor {
 
         if (projectType === ProjectType.OPEN_SOURCE) {
           typeEmoji = '🌍'
-          typeText = `开源项目 (置信度: ${confidence}%)`
+          typeText = `開源專案 (置信度: ${confidence}%)`
         } else if (projectType === ProjectType.CORPORATE) {
           typeEmoji = '🏢'
-          typeText = `公司项目 (置信度: ${confidence}%)`
+          typeText = `公司專案 (置信度: ${confidence}%)`
         } else {
           typeEmoji = '❓'
-          typeText = `不确定 (置信度: ${confidence}%)`
+          typeText = `不確定 (置信度: ${confidence}%)`
         }
 
         typeTable.push([
@@ -450,21 +455,21 @@ export class MultiExecutor {
     console.log(typeTable.toString())
     console.log()
 
-    // 如果有开源项目，显示提示
+    // 如果有開源專案，顯示提示
     const openSourceCount = repoRecords.filter(
       (r) => r.classification && r.classification.projectType === ProjectType.OPEN_SOURCE
     ).length
 
     if (openSourceCount > 0) {
       console.log(chalk.yellow('💡 提示：'))
-      console.log(chalk.yellow(`   检测到 ${openSourceCount} 个开源项目。开源项目的周末和晚间提交是正常的社区贡献。`))
-      console.log(chalk.yellow('   汇总报告不会显示"996指数"和"加班分析"等不适用的指标。'))
+      console.log(chalk.yellow(`   檢測到 ${openSourceCount} 個開源專案。開源專案的週末和晚間提交是正常的社区貢獻。`))
+      console.log(chalk.yellow('   彙總報告不會顯示"996指數"和"加班分析"等不適用的指標。'))
       console.log()
     }
   }
 
   /**
-   * 找到所有仓库中最新的提交日期
+   * 找到所有儲存庫中最新的提交日期
    */
   private static async findLatestCommitDate(repos: RepoInfo[], collector: GitCollector): Promise<string | null> {
     let latestDate: string | null = null
@@ -476,7 +481,7 @@ export class MultiExecutor {
           latestDate = lastDate
         }
       } catch {
-        // 忽略单个仓库的错误
+        // 忽略單個儲存庫的錯誤
       }
     }
 
@@ -484,7 +489,7 @@ export class MultiExecutor {
   }
 
   /**
-   * 格式化 UTC 日期为 YYYY-MM-DD
+   * 格式化 UTC 日期為 YYYY-MM-DD
    */
   private static formatUTCDate(date: Date): string {
     const year = date.getUTCFullYear()
@@ -494,7 +499,7 @@ export class MultiExecutor {
   }
 
   /**
-   * 解析时间范围（用于用户明确指定时）
+   * 解析時間範圍（用於使用者明确指定時）
    */
   private static resolveTimeRange(options: AnalyzeOptions): { since?: string; until?: string } {
     // 如果明确指定了 --all-time
@@ -526,19 +531,19 @@ export class MultiExecutor {
   }
 
   /**
-   * 解析 --year 参数
+   * 解析 --year 参數
    */
   private static parseYearOption(yearStr: string): { since: string; until: string } | null {
     yearStr = yearStr.trim()
 
-    // 匹配年份范围格式：2023-2025
+    // 匹配年份範圍格式：2023-2025
     const rangeMatch = yearStr.match(/^(\d{4})-(\d{4})$/)
     if (rangeMatch) {
       const startYear = parseInt(rangeMatch[1], 10)
       const endYear = parseInt(rangeMatch[2], 10)
 
       if (startYear < 1970 || endYear < 1970 || startYear > endYear) {
-        console.error(chalk.red('❌ 年份格式错误: 起始年份不能大于结束年份，且年份必须 >= 1970'))
+        console.error(chalk.red('❌ 年份格式錯誤: 起始年份不能大於結束年份，且年份必須 >= 1970'))
         process.exit(1)
       }
 
@@ -548,13 +553,13 @@ export class MultiExecutor {
       }
     }
 
-    // 匹配单年格式：2025
+    // 匹配單年格式：2025
     const singleMatch = yearStr.match(/^(\d{4})$/)
     if (singleMatch) {
       const year = parseInt(singleMatch[1], 10)
 
       if (year < 1970) {
-        console.error(chalk.red('❌ 年份格式错误: 年份必须 >= 1970'))
+        console.error(chalk.red('❌ 年份格式錯誤: 年份必須 >= 1970'))
         process.exit(1)
       }
 
@@ -564,7 +569,7 @@ export class MultiExecutor {
       }
     }
 
-    console.error(chalk.red('❌ 年份格式错误: 请使用 YYYY 格式（如 2025）或 YYYY-YYYY 格式（如 2023-2025）'))
+    console.error(chalk.red('❌ 年份格式錯誤: 請使用 YYYY 格式（如 2025）或 YYYY-YYYY 格式（如 2023-2025）'))
     process.exit(1)
   }
 }

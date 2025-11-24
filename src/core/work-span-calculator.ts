@@ -2,21 +2,21 @@ import { DailyWorkSpan } from '../types/git-types'
 import { getWorkdayChecker } from '../utils/workday-checker'
 
 /**
- * 工作跨度计算器
- * 计算每日的工作时间跨度（首次提交到最后提交的时间差）
+ * 工作跨度計算器
+ * 計算每日的工作時間跨度（首次提交到最後提交的時間差）
  */
 export class WorkSpanCalculator {
   /**
-   * 从提交数据中计算每日工作跨度
-   * @param commits 提交数据数组，每个元素包含 timestamp
-   * @returns 每日工作跨度数组
+   * 從提交資料中計算每日工作跨度
+   * @param commits 提交資料陣列，每個元素包含 timestamp
+   * @returns 每日工作跨度陣列
    */
   static calculateDailyWorkSpans(commits: Array<{ timestamp: number }>): DailyWorkSpan[] {
     if (!commits || commits.length === 0) {
       return []
     }
 
-    // 按日期分组提交
+    // 按日期分組提交
     const commitsByDate = new Map<string, number[]>() // date -> minutes from midnight
 
     for (const commit of commits) {
@@ -30,7 +30,7 @@ export class WorkSpanCalculator {
       commitsByDate.get(dateStr)!.push(minutesFromMidnight)
     }
 
-    // 计算每日工作跨度
+    // 計算每日工作跨度
     const dailySpans: DailyWorkSpan[] = []
 
     for (const [date, minutes] of commitsByDate.entries()) {
@@ -42,7 +42,7 @@ export class WorkSpanCalculator {
       const firstCommitMinutes = minutes[0]
       const lastCommitMinutes = minutes[minutes.length - 1]
 
-      // 计算工作跨度（小时）
+      // 計算工作跨度（小時）
       const spanMinutes = lastCommitMinutes - firstCommitMinutes
       const spanHours = spanMinutes / 60
 
@@ -62,9 +62,9 @@ export class WorkSpanCalculator {
   }
 
   /**
-   * 计算工作跨度的平均值
-   * @param spans 工作跨度数组
-   * @returns 平均工作跨度（小时）
+   * 計算工作跨度的平均值
+   * @param spans 工作跨度陣列
+   * @returns 平均工作跨度（小時）
    */
   static calculateAverage(spans: DailyWorkSpan[]): number {
     if (spans.length === 0) return 0
@@ -74,9 +74,9 @@ export class WorkSpanCalculator {
   }
 
   /**
-   * 计算工作跨度的标准差
-   * @param spans 工作跨度数组
-   * @returns 标准差（小时）
+   * 計算工作跨度的標準差
+   * @param spans 工作跨度陣列
+   * @returns 標準差（小時）
    */
   static calculateStdDev(spans: DailyWorkSpan[]): number {
     if (spans.length === 0) return 0
@@ -90,11 +90,11 @@ export class WorkSpanCalculator {
   }
 
   /**
-   * 获取平均开始工作时间
-   * 支持中国调休制度：只统计实际工作日
-   * @param spans 工作跨度数组
-   * @param enableHolidayMode 是否启用节假日调休模式
-   * @returns 平均开始工作时间 (HH:mm)
+   * 獲取平均開始工作時間
+   * 支援中國調休制度：只統計實際工作日
+   * @param spans 工作跨度陣列
+   * @param enableHolidayMode 是否啟用節假日調休模式
+   * @returns 平均開始工作時間 (HH:mm)
    */
   static async getAverageStartTime(spans: DailyWorkSpan[], enableHolidayMode: boolean = true): Promise<string> {
     if (spans.length === 0) return '--:--'
@@ -104,12 +104,12 @@ export class WorkSpanCalculator {
       const dates = spans.map((span) => span.date)
       const isWorkdayResults = await checker.isWorkdayBatch(dates)
 
-      // 使用与 getAverageEndTime 相同的过滤逻辑
+      // 使用與 getAverageEndTime 相同的過濾逻辑
       const validSpans = spans.filter((span, index) => {
         return (
-          isWorkdayResults[index] && // 工作日（考虑调休）
-          span.spanHours >= 4 && // 跨度≥4小时
-          span.lastCommitMinutes >= 15 * 60 // 15:00后结束
+          isWorkdayResults[index] && // 工作日（考慮調休）
+          span.spanHours >= 4 && // 跨度≥4小時
+          span.lastCommitMinutes >= 15 * 60 // 15:00後結束
         )
       })
 
@@ -119,13 +119,13 @@ export class WorkSpanCalculator {
       const avgMinutes = Math.round(totalMinutes / dataToUse.length)
       return this.formatTime(avgMinutes)
     } catch (error) {
-      // 回退到基础判断
+      // 回退到基础判斷
       return this.getAverageStartTimeBasic(spans)
     }
   }
 
   /**
-   * 基础的平均开始工作时间计算（不考虑调休）
+   * 基础的平均開始工作時間計算（不考慮調休）
    */
   private static getAverageStartTimeBasic(spans: DailyWorkSpan[]): string {
     if (spans.length === 0) return '--:--'
@@ -136,7 +136,7 @@ export class WorkSpanCalculator {
 
       return (
         dayOfWeek >= 1 &&
-        dayOfWeek <= 5 && // 工作日（基础判断）
+        dayOfWeek <= 5 && // 工作日（基础判斷）
         span.spanHours >= 4 &&
         span.lastCommitMinutes >= 15 * 60
       )
@@ -149,11 +149,11 @@ export class WorkSpanCalculator {
   }
 
   /**
-   * 获取平均结束工作时间
-   * 支持中国调休制度：只统计实际工作日
-   * @param spans 工作跨度数组
-   * @param enableHolidayMode 是否启用节假日调休模式
-   * @returns 平均结束工作时间 (HH:mm)
+   * 獲取平均結束工作時間
+   * 支援中國調休制度：只統計實際工作日
+   * @param spans 工作跨度陣列
+   * @param enableHolidayMode 是否啟用節假日調休模式
+   * @returns 平均結束工作時間 (HH:mm)
    */
   static async getAverageEndTime(spans: DailyWorkSpan[], enableHolidayMode: boolean = true): Promise<string> {
     if (spans.length === 0) return '--:--'
@@ -163,19 +163,19 @@ export class WorkSpanCalculator {
       const dates = spans.map((span) => span.date)
       const isWorkdayResults = await checker.isWorkdayBatch(dates)
 
-      // 过滤条件：只统计正常工作日
+      // 過濾條件：只統計正常工作日
       const validSpans = spans.filter((span, index) => {
-        // 1. 排除非工作日（周末和法定节假日，考虑调休）
+        // 1. 排除非工作日（週末和法定節假日，考慮調休）
         if (!isWorkdayResults[index]) {
           return false
         }
 
-        // 2. 排除工作跨度过短的异常天（<4小时）
+        // 2. 排除工作跨度過短的異常天（<4小時）
         if (span.spanHours < 4) {
           return false
         }
 
-        // 3. 排除过早结束的天（15:00之前结束）
+        // 3. 排除過早結束的天（15:00之前結束）
         if (span.lastCommitMinutes < 15 * 60) {
           return false
         }
@@ -183,20 +183,20 @@ export class WorkSpanCalculator {
         return true
       })
 
-      // 如果过滤后没有有效数据，降级使用所有数据
+      // 如果過濾後沒有有效資料，降级使用所有資料
       const dataToUse = validSpans.length > 0 ? validSpans : spans
 
       const totalMinutes = dataToUse.reduce((sum, span) => sum + span.lastCommitMinutes, 0)
       const avgMinutes = Math.round(totalMinutes / dataToUse.length)
       return this.formatTime(avgMinutes)
     } catch (error) {
-      // 回退到基础判断
+      // 回退到基础判斷
       return this.getAverageEndTimeBasic(spans)
     }
   }
 
   /**
-   * 基础的平均结束工作时间计算（不考虑调休）
+   * 基础的平均結束工作時間計算（不考慮調休）
    */
   private static getAverageEndTimeBasic(spans: DailyWorkSpan[]): string {
     if (spans.length === 0) return '--:--'
@@ -227,9 +227,9 @@ export class WorkSpanCalculator {
   }
 
   /**
-   * 获取最晚的提交时间
-   * @param spans 工作跨度数组
-   * @returns 最晚提交时间 (HH:mm)
+   * 獲取最晚的提交時間
+   * @param spans 工作跨度陣列
+   * @returns 最晚提交時間 (HH:mm)
    */
   static getLatestEndTime(spans: DailyWorkSpan[]): string {
     if (spans.length === 0) return '--:--'
@@ -239,7 +239,7 @@ export class WorkSpanCalculator {
   }
 
   /**
-   * 格式化日期为 YYYY-MM-DD
+   * 格式化日期為 YYYY-MM-DD
    */
   private static formatDate(date: Date): string {
     const year = date.getFullYear()
@@ -249,11 +249,11 @@ export class WorkSpanCalculator {
   }
 
   /**
-   * 格式化分钟数为 HH:mm
-   * 注意：支持超过24小时的分钟数（用于表示次日凌晨）
+   * 格式化分鐘數為 HH:mm
+   * 注意：支援超過24小時的分鐘數（用於表示次日凌晨）
    */
   private static formatTime(minutes: number): string {
-    // 如果超过24小时，说明是次日凌晨，转换回0-24范围并标注
+    // 如果超過24小時，說明是次日凌晨，轉換回0-24範圍並標注
     let displayMinutes = minutes
     let nextDay = false
 
@@ -266,7 +266,7 @@ export class WorkSpanCalculator {
     const mins = displayMinutes % 60
     const timeStr = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`
 
-    // 如果是次日凌晨，添加标记
+    // 如果是次日凌晨，添加標記
     return nextDay ? `${timeStr}+1` : timeStr
   }
 }

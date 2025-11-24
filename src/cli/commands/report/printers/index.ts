@@ -1,5 +1,5 @@
 /**
- * 报表打印器统一导出
+ * 報表打印器統一導出
  */
 
 export { printCoreResults, type TimeRangeMode } from './core-printer'

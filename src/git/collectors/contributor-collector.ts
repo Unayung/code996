@@ -2,18 +2,18 @@ import { GitLogOptions } from '../../types/git-types'
 import { BaseCollector } from './base-collector'
 
 /**
- * 参与者与元数据统计采集器
- * 负责统计提交总数、参与人数、首末提交日期等
+ * 参與者與元資料統計採集器
+ * 負責統計提交總數、参與人數、首末提交日期等
  */
 export class ContributorCollector extends BaseCollector {
   /**
-   * 统计符合过滤条件的 commit 数量
-   * 注意：由于需要支持作者排除过滤和时区过滤，这里使用 log 而不是 rev-list
+   * 統計符合過濾條件的 commit 數量
+   * 注意：由于需要支援作者排除過濾和時區過濾，這裡使用 log 而不是 rev-list
    */
   async countCommits(options: GitLogOptions): Promise<number> {
     const { path } = options
 
-    // 如果没有作者排除过滤且没有时区过滤，使用更高效的 rev-list
+    // 如果沒有作者排除過濾且沒有時區過濾，使用更高效的 rev-list
     if (!options.ignoreAuthor && !options.timezone) {
       const args = ['rev-list', '--count', 'HEAD']
       this.applyCommonFilters(args, options)
@@ -24,7 +24,7 @@ export class ContributorCollector extends BaseCollector {
       return isNaN(count) ? 0 : count
     }
 
-    // 有作者排除或时区过滤时，需要获取详细信息进行过滤
+    // 有作者排除或時區過濾時，需要獲取詳細資訊進行過濾
     // 格式: "Author Name <email@example.com>|ISO_TIMESTAMP"
     const args = ['log', '--format=%an <%ae>|%ai']
     this.applyCommonFilters(args, options)
@@ -42,12 +42,12 @@ export class ContributorCollector extends BaseCollector {
       const author = parts[0]
       const isoTimestamp = parts[1]
 
-      // 检查作者过滤
+      // 檢查作者過濾
       if (this.shouldIgnoreAuthor(author, options.ignoreAuthor)) {
         continue
       }
 
-      // 检查时区过滤
+      // 檢查時區過濾
       if (options.timezone) {
         const timezoneMatch = isoTimestamp.match(/([+-]\d{4})$/)
         if (!timezoneMatch || timezoneMatch[1] !== options.timezone) {
@@ -62,7 +62,7 @@ export class ContributorCollector extends BaseCollector {
   }
 
   /**
-   * 统计参与人数（不同的作者数量）
+   * 統計参與人數（不同的作者數量）
    */
   async getContributorCount(options: GitLogOptions): Promise<number> {
     const { path } = options
@@ -84,12 +84,12 @@ export class ContributorCollector extends BaseCollector {
       const author = parts[0]
       const isoTimestamp = parts[1]
 
-      // 检查是否应该排除此作者
+      // 檢查是否應該排除此作者
       if (this.shouldIgnoreAuthor(author, options.ignoreAuthor)) {
         continue
       }
 
-      // 检查时区过滤
+      // 檢查時區過濾
       if (options.timezone) {
         const timezoneMatch = isoTimestamp.match(/([+-]\d{4})$/)
         if (!timezoneMatch || timezoneMatch[1] !== options.timezone) {
@@ -97,7 +97,7 @@ export class ContributorCollector extends BaseCollector {
         }
       }
 
-      // 提取邮箱作为唯一标识
+      // 提取郵箱作為唯一標識
       const emailMatch = author.match(/<(.+?)>/)
       if (emailMatch) {
         uniqueAuthors.add(emailMatch[1])
@@ -108,7 +108,7 @@ export class ContributorCollector extends BaseCollector {
   }
 
   /**
-   * 获取最早的commit时间
+   * 獲取最早的commit時間
    */
   async getFirstCommitDate(options: GitLogOptions): Promise<string> {
     const { path } = options
@@ -120,7 +120,7 @@ export class ContributorCollector extends BaseCollector {
     const output = await this.execGitCommand(args, path)
     const lines = output.split('\n').filter((line) => line.trim())
 
-    // 找到第一个未被排除的提交
+    // 找到第一個未被排除的提交
     for (const line of lines) {
       const parts = line.split('|')
       if (parts.length < 3) {
@@ -131,12 +131,12 @@ export class ContributorCollector extends BaseCollector {
       const date = parts[1]
       const isoTimestamp = parts[2]
 
-      // 检查作者过滤
+      // 檢查作者過濾
       if (this.shouldIgnoreAuthor(author, options.ignoreAuthor)) {
         continue
       }
 
-      // 检查时区过滤
+      // 檢查時區過濾
       if (options.timezone) {
         const timezoneMatch = isoTimestamp.match(/([+-]\d{4})$/)
         if (!timezoneMatch || timezoneMatch[1] !== options.timezone) {
@@ -151,20 +151,20 @@ export class ContributorCollector extends BaseCollector {
   }
 
   /**
-   * 获取最新的commit时间
+   * 獲取最新的commit時間
    */
   async getLastCommitDate(options: GitLogOptions): Promise<string> {
     const { path } = options
 
     // 格式: "Author Name <email@example.com>|YYYY-MM-DD|ISO_TIMESTAMP"
-    // 注意：不能使用 -1 限制，因为最新的提交可能被排除
+    // 注意：不能使用 -1 限制，因為最新的提交可能被排除
     const args = ['log', '--format=%an <%ae>|%cd|%ai', '--date=format:%Y-%m-%d']
     this.applyCommonFilters(args, options)
 
     const output = await this.execGitCommand(args, path)
     const lines = output.split('\n').filter((line) => line.trim())
 
-    // 找到第一个未被排除的提交（因为 log 默认按时间倒序）
+    // 找到第一個未被排除的提交（因為 log 預設按時間倒序）
     for (const line of lines) {
       const parts = line.split('|')
       if (parts.length < 3) {
@@ -175,12 +175,12 @@ export class ContributorCollector extends BaseCollector {
       const date = parts[1]
       const isoTimestamp = parts[2]
 
-      // 检查作者过滤
+      // 檢查作者過濾
       if (this.shouldIgnoreAuthor(author, options.ignoreAuthor)) {
         continue
       }
 
-      // 检查时区过滤
+      // 檢查時區過濾
       if (options.timezone) {
         const timezoneMatch = isoTimestamp.match(/([+-]\d{4})$/)
         if (!timezoneMatch || timezoneMatch[1] !== options.timezone) {

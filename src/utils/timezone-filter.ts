@@ -2,23 +2,23 @@ import { GitLogData, TimezoneData } from '../types/git-types'
 import chalk from 'chalk'
 
 /**
- * 按时区过滤 Git 数据
- * 注意：这是后处理近似过滤，精度有限
+ * 按時區過濾 Git 資料
+ * 注意：這是後處理近似過濾，精度有限
  */
 export class TimezoneFilter {
   /**
-   * 验证时区格式
-   * @param timezone 时区字符串，如 "+0800", "-0700"
+   * 驗證時區格式
+   * @param timezone 時區字符串，如 "+0800", "-0700"
    */
   static isValidTimezone(timezone: string): boolean {
     return /^[+-]\d{4}$/.test(timezone)
   }
 
   /**
-   * 按指定时区过滤数据
-   * @param rawData 原始 Git 数据
-   * @param targetTimezone 目标时区，如 "+0800"
-   * @returns 过滤后的数据和元信息
+   * 按指定時區過濾資料
+   * @param rawData 原始 Git 資料
+   * @param targetTimezone 目標時區，如 "+0800"
+   * @returns 過濾後的資料和元資訊
    */
   static filterByTimezone(
     rawData: GitLogData,
@@ -30,52 +30,52 @@ export class TimezoneFilter {
     filteredCommits: number
     warning: string
   } {
-    // 验证时区格式
+    // 驗證時區格式
     if (!this.isValidTimezone(targetTimezone)) {
-      throw new Error(`无效的时区格式: ${targetTimezone}，正确格式为 +HHMM 或 -HHMM（例如: +0800, -0700）`)
+      throw new Error(`無效的時區格式: ${targetTimezone}，正確格式為 +HHMM 或 -HHMM（例如: +0800, -0700）`)
     }
 
-    // 检查时区数据是否存在
+    // 檢查時區資料是否存在
     if (!rawData.timezoneData || rawData.timezoneData.totalCommits === 0) {
-      throw new Error('无法按时区过滤：时区数据不可用')
+      throw new Error('無法按時區過濾：時區資料不可用')
     }
 
     const timezoneData = rawData.timezoneData
 
-    // 查找目标时区
+    // 查找目標時區
     const targetTzData = timezoneData.timezones.find((tz) => tz.offset === targetTimezone)
 
     if (!targetTzData) {
-      // 列出可用时区
+      // 列出可用時區
       const availableTimezones = timezoneData.timezones
         .slice(0, 5)
         .map((tz) => `${tz.offset} (${((tz.count / timezoneData.totalCommits) * 100).toFixed(1)}%)`)
         .join(', ')
 
       throw new Error(
-        `时区 ${targetTimezone} 在数据中不存在。可用时区: ${availableTimezones}${timezoneData.timezones.length > 5 ? '...' : ''}`
+        `時區 ${targetTimezone} 在資料中不存在。可用時區: ${availableTimezones}${timezoneData.timezones.length > 5 ? '...' : ''}`
       )
     }
 
-    // 计算目标时区占比
+    // 計算目標時區占比
     const ratio = targetTzData.count / timezoneData.totalCommits
     const filteredCommits = targetTzData.count
 
-    // 按占比缩放数据（后处理近似过滤）
-    // 使用精确缩放确保总和一致
+    // 按占比縮放資料（後處理近似過濾）
+    // 使用精確縮放確保總和一致
     const scaleArray = (items: Array<{ time: string; count: number }>): Array<{ time: string; count: number }> => {
-      // 第一遍：按比例缩放并向下取整
+      // 第一遍：按比例縮放並向下取整
       const scaled = items.map((item) => ({
         ...item,
         count: Math.floor(item.count * ratio),
         remainder: (item.count * ratio) % 1,
       }))
 
-      // 计算差值
+      // 計算差值
       const currentSum = scaled.reduce((sum, item) => sum + item.count, 0)
       let diff = filteredCommits - currentSum
 
-      // 按余数大小排序，将差值分配给余数最大的项
+      // 按餘數大小排序，將差值分配給餘數最大的項
       const sortedByRemainder = [...scaled].sort((a, b) => b.remainder - a.remainder)
 
       for (let i = 0; i < diff && i < sortedByRemainder.length; i++) {
@@ -94,7 +94,7 @@ export class TimezoneFilter {
       totalCommits: filteredCommits,
       byHour: scaleArray(rawData.byHour),
       byDay: scaleArray(rawData.byDay),
-      // 以下字段无法精确过滤，保持原样
+      // 以下字段無法精確過濾，保持原樣
       dailyFirstCommits: rawData.dailyFirstCommits,
       dayHourCommits: rawData.dayHourCommits
         ? scaleArray(
@@ -109,7 +109,7 @@ export class TimezoneFilter {
       contributors: rawData.contributors ? Math.max(1, Math.round(rawData.contributors * ratio)) : undefined,
     }
 
-    // 生成警告信息
+    // 生成警告資訊
     const warning = this.generateFilterWarning(targetTimezone, ratio, timezoneData.totalCommits, filteredCommits)
 
     return {
@@ -122,7 +122,7 @@ export class TimezoneFilter {
   }
 
   /**
-   * 生成过滤警告信息
+   * 生成過濾警告資訊
    */
   private static generateFilterWarning(
     timezone: string,
@@ -132,24 +132,24 @@ export class TimezoneFilter {
   ): string {
     const lines: string[] = []
 
-    lines.push(chalk.blue('⚙️  时区过滤已启用'))
+    lines.push(chalk.blue('⚙️  時區過濾已啟用'))
     lines.push('')
-    lines.push(chalk.gray(`目标时区: ${timezone}`))
-    lines.push(chalk.gray(`时区占比: ${(ratio * 100).toFixed(1)}%`))
-    lines.push(chalk.gray(`原始提交: ${originalCommits} → 过滤后: ${filteredCommits}`))
+    lines.push(chalk.gray(`目標時區: ${timezone}`))
+    lines.push(chalk.gray(`時區占比: ${(ratio * 100).toFixed(1)}%`))
+    lines.push(chalk.gray(`原始提交: ${originalCommits} → 過濾後: ${filteredCommits}`))
     lines.push('')
-    lines.push(chalk.yellow('⚠️  注意: 当前使用后处理近似过滤，以下数据可能不够精确:'))
-    lines.push(chalk.gray('  • 每日首次/最晚提交时间'))
-    lines.push(chalk.gray('  • 工作时间推测'))
-    lines.push(chalk.gray('  • 部分统计维度'))
+    lines.push(chalk.yellow('⚠️  注意: 目前使用後處理近似過濾，以下資料可能不夠精確:'))
+    lines.push(chalk.gray('  • 每日首次/最晚提交時間'))
+    lines.push(chalk.gray('  • 工作時間推測'))
+    lines.push(chalk.gray('  • 部分統計維度'))
     lines.push('')
-    lines.push(chalk.gray('💡 建议: 结合 --author 参数获得更精确的结果'))
+    lines.push(chalk.gray('💡 建議: 結合 --author 參數獲得更精確的結果'))
 
     return lines.join('\n')
   }
 
   /**
-   * 获取可用时区列表（用于提示）
+   * 獲取可用時區列表（用於提示）
    */
   static getAvailableTimezones(timezoneData: TimezoneData, limit: number = 5): string[] {
     return timezoneData.timezones.slice(0, limit).map((tz) => {

@@ -1,27 +1,27 @@
 import { TimeCount } from '../types/git-types'
 
 /**
- * 时间数据聚合工具
- * 用于将半小时粒度（48点）数据聚合为小时粒度（24点）
+ * 時間資料聚合工具
+ * 用於將半小時粒度（48点）資料聚合為小時粒度（24点）
  */
 export class TimeAggregator {
   /**
-   * 将48个半小时点聚合为24个小时点
-   * @param halfHourData 半小时粒度数据（48点）
-   * @returns 小时粒度数据（24点）
+   * 將48個半小時点聚合為24個小時点
+   * @param halfHourData 半小時粒度資料（48点）
+   * @returns 小時粒度資料（24点）
    */
   static aggregateToHour(halfHourData: TimeCount[]): TimeCount[] {
     const hourMap = new Map<string, number>()
 
-    // 初始化24小时
+    // 初始化24小時
     for (let i = 0; i < 24; i++) {
       const hour = i.toString().padStart(2, '0')
       hourMap.set(hour, 0)
     }
 
-    // 聚合半小时数据
+    // 聚合半小時資料
     for (const item of halfHourData) {
-      // 提取小时部分：'09:30' -> '09', '09:00' -> '09'
+      // 提取小時部分：'09:30' -> '09', '09:00' -> '09'
       const hourMatch = item.time.match(/^(\d{2})/)
       if (hourMatch) {
         const hour = hourMatch[1]
@@ -30,7 +30,7 @@ export class TimeAggregator {
       }
     }
 
-    // 转为数组
+    // 轉為陣列
     const result: TimeCount[] = []
     for (let i = 0; i < 24; i++) {
       const hour = i.toString().padStart(2, '0')
@@ -44,8 +44,8 @@ export class TimeAggregator {
   }
 
   /**
-   * 检测数据粒度
-   * @param data 时间数据
+   * 檢測資料粒度
+   * @param data 時間資料
    * @returns 'half-hour' 或 'hour'
    */
   static detectGranularity(data: TimeCount[]): 'half-hour' | 'hour' {
@@ -55,7 +55,7 @@ export class TimeAggregator {
     if (data.length === 24) {
       return 'hour'
     }
-    // 通过检查是否包含冒号来判断
+    // 通過檢查是否包含冒號來判斷
     const hasColon = data.some((item) => item.time.includes(':'))
     return hasColon ? 'half-hour' : 'hour'
   }

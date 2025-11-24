@@ -2,41 +2,41 @@ import { GitLogOptions, TimeCount } from '../../types/git-types'
 import { BaseCollector } from './base-collector'
 
 /**
- * 贡献者信息（用于过滤和排序）
+ * 貢獻者資訊（用於過濾和排序）
  */
 export interface ContributorInfo {
   author: string // 作者名 "Name <email>"
-  email: string // 邮箱
+  email: string // 郵箱
   name: string // 姓名
-  commits: number // 提交数
+  commits: number // 提交數
 }
 
 /**
- * 每日首次/末次提交记录
+ * 每日首次/末次提交記錄
  */
 export interface DailyCommitTime {
   date: string // YYYY-MM-DD
-  minutesFromMidnight: number // 距离午夜的分钟数
+  minutesFromMidnight: number // 距離午夜的分鐘數
 }
 
 /**
- * 用户工作模式数据（单个用户的原始采集数据）
+ * 使用者工作模式資料（單個使用者的原始採集資料）
  */
 export interface UserPatternData {
   contributor: ContributorInfo
-  timeDistribution: TimeCount[] // 时间分布（24小时）
+  timeDistribution: TimeCount[] // 時間分布（24小時）
   dayDistribution: TimeCount[] // 星期分布（1-7）
-  dailyFirstCommits: DailyCommitTime[] // 每日首次提交时间（过滤后）
-  dailyLatestCommits: DailyCommitTime[] // 每日末次提交时间（过滤后）
+  dailyFirstCommits: DailyCommitTime[] // 每日首次提交時間（過濾後）
+  dailyLatestCommits: DailyCommitTime[] // 每日末次提交時間（過濾後）
 }
 
 /**
- * 用户工作模式采集器
- * 负责为每个核心贡献者单独采集时间分布数据
+ * 使用者工作模式採集器
+ * 負責為每個核心貢獻者單獨採集時間分布資料
  */
 export class UserPatternCollector extends BaseCollector {
   /**
-   * 获取所有贡献者列表及其提交数
+   * 獲取所有貢獻者列表及其提交數
    */
   async getAllContributors(options: GitLogOptions): Promise<ContributorInfo[]> {
     const { path } = options
@@ -48,7 +48,7 @@ export class UserPatternCollector extends BaseCollector {
     const output = await this.execGitCommand(args, path)
     const lines = output.split('\n').filter((line) => line.trim())
 
-    // 统计每个作者的提交数
+    // 統計每個作者的提交數
     const authorCommits = new Map<string, number>()
     const authorInfoMap = new Map<string, { name: string; email: string }>()
 
@@ -61,12 +61,12 @@ export class UserPatternCollector extends BaseCollector {
       const author = parts[0]
       const isoTimestamp = parts[1]
 
-      // 检查是否应该排除此作者
+      // 檢查是否應該排除此作者
       if (this.shouldIgnoreAuthor(author, options.ignoreAuthor)) {
         continue
       }
 
-      // 时区过滤
+      // 時區過濾
       if (options.timezone) {
         const timezoneMatch = isoTimestamp.match(/([+-]\d{4})$/)
         if (!timezoneMatch || timezoneMatch[1] !== options.timezone) {
@@ -74,13 +74,13 @@ export class UserPatternCollector extends BaseCollector {
         }
       }
 
-      // 提取姓名和邮箱
+      // 提取姓名和郵箱
       const match = author.match(/^(.+?)\s*<(.+?)>$/)
       if (match) {
         const name = match[1].trim()
         const email = match[2].trim()
 
-        // 使用邮箱作为唯一标识
+        // 使用郵箱作為唯一標識
         authorCommits.set(email, (authorCommits.get(email) || 0) + 1)
         if (!authorInfoMap.has(email)) {
           authorInfoMap.set(email, { name, email })
@@ -88,7 +88,7 @@ export class UserPatternCollector extends BaseCollector {
       }
     }
 
-    // 转换为ContributorInfo数组
+    // 轉換為ContributorInfo陣列
     const contributors: ContributorInfo[] = []
     for (const [email, commits] of authorCommits.entries()) {
       const info = authorInfoMap.get(email)
@@ -102,17 +102,17 @@ export class UserPatternCollector extends BaseCollector {
       }
     }
 
-    // 按提交数降序排序
+    // 按提交數降序排序
     contributors.sort((a, b) => b.commits - a.commits)
 
     return contributors
   }
 
   /**
-   * 过滤核心贡献者
-   * @param contributors 所有贡献者列表
-   * @param minCommits 最小提交数（默认20）
-   * @param maxUsers 最大用户数（默认30）
+   * 過濾核心貢獻者
+   * @param contributors 所有貢獻者列表
+   * @param minCommits 最小提交數（預設20）
+   * @param maxUsers 最大使用者數（預設30）
    */
   filterCoreContributors(
     contributors: ContributorInfo[],
@@ -123,12 +123,12 @@ export class UserPatternCollector extends BaseCollector {
   }
 
   /**
-   * 为单个用户采集时间分布数据（24小时粒度）
+   * 為單個使用者採集時間分布資料（24小時粒度）
    */
   async getUserTimeDistribution(email: string, options: GitLogOptions): Promise<TimeCount[]> {
     const { path } = options
 
-    // 使用 --author 参数过滤特定用户
+    // 使用 --author 參數過濾特定使用者
     // 格式: "HH:MM|ISO_TIMESTAMP"
     const args = ['log', '--format=%cd|%ai', `--date=format-local:%H:%M`, `--author=${email}`]
     this.applyCommonFilters(args, options)
@@ -136,7 +136,7 @@ export class UserPatternCollector extends BaseCollector {
     const output = await this.execGitCommand(args, path)
     const lines = output.split('\n').filter((line) => line.trim())
 
-    // 统计24小时分布（聚合到小时）
+    // 統計24小時分布（聚合到小時）
     const hourCounts = new Map<number, number>()
 
     for (const line of lines) {
@@ -148,7 +148,7 @@ export class UserPatternCollector extends BaseCollector {
       const time = parts[0]
       const isoTimestamp = parts[1]
 
-      // 时区过滤
+      // 時區過濾
       if (options.timezone) {
         const timezoneMatch = isoTimestamp.match(/([+-]\d{4})$/)
         if (!timezoneMatch || timezoneMatch[1] !== options.timezone) {
@@ -163,7 +163,7 @@ export class UserPatternCollector extends BaseCollector {
       }
     }
 
-    // 转换为TimeCount数组（补全24小时）
+    // 轉換為TimeCount陣列（補全24小時）
     const timeDistribution: TimeCount[] = []
     for (let hour = 0; hour < 24; hour++) {
       timeDistribution.push({
@@ -176,20 +176,20 @@ export class UserPatternCollector extends BaseCollector {
   }
 
   /**
-   * 为单个用户采集星期分布数据
+   * 為單個使用者採集星期分布資料
    */
   async getUserDayDistribution(email: string, options: GitLogOptions): Promise<TimeCount[]> {
     const { path } = options
 
-    // 使用 --author 参数过滤特定用户
-    // 格式: "D|ISO_TIMESTAMP" (0-6, 周日到周六)
+    // 使用 --author 參數過濾特定使用者
+    // 格式: "D|ISO_TIMESTAMP" (0-6, 週日到週六)
     const args = ['log', '--format=%cd|%ai', `--date=format-local:%w`, `--author=${email}`]
     this.applyCommonFilters(args, options)
 
     const output = await this.execGitCommand(args, path)
     const lines = output.split('\n').filter((line) => line.trim())
 
-    // 统计星期分布
+    // 統計星期分布
     const dayCounts = new Map<number, number>()
 
     for (const line of lines) {
@@ -201,7 +201,7 @@ export class UserPatternCollector extends BaseCollector {
       const dayStr = parts[0]
       const isoTimestamp = parts[1]
 
-      // 时区过滤
+      // 時區過濾
       if (options.timezone) {
         const timezoneMatch = isoTimestamp.match(/([+-]\d{4})$/)
         if (!timezoneMatch || timezoneMatch[1] !== options.timezone) {
@@ -211,13 +211,13 @@ export class UserPatternCollector extends BaseCollector {
 
       const dayW = parseInt(dayStr.trim(), 10)
       if (dayW >= 0 && dayW <= 6) {
-        // 转换：%w 的 0(周日) -> 7, 1-6 -> 1-6
+        // 轉換：%w 的 0(週日) -> 7, 1-6 -> 1-6
         const day = dayW === 0 ? 7 : dayW
         dayCounts.set(day, (dayCounts.get(day) || 0) + 1)
       }
     }
 
-    // 转换为TimeCount数组（补全7天）
+    // 轉換為TimeCount陣列（補全7天）
     const dayDistribution: TimeCount[] = []
     for (let day = 1; day <= 7; day++) {
       dayDistribution.push({
@@ -230,15 +230,15 @@ export class UserPatternCollector extends BaseCollector {
   }
 
   /**
-   * 为单个用户采集每日首次提交时间
-   * - 仅工作日（周一到周五）
-   * - 上班时间范围：08:00-12:00
-   * @param monthsBack 时间窗口（月数），默认6个月
+   * 為單個使用者採集每日首次提交時間
+   * - 僅工作日（週一到週五）
+   * - 上班時間範圍：08:00-12:00
+   * @param monthsBack 時間視窗（月數），預設6個月
    */
   async getUserDailyFirstCommits(email: string, options: GitLogOptions, monthsBack: number = 6): Promise<DailyCommitTime[]> {
     const { path } = options
 
-    // 计算N个月前的日期
+    // 計算N個月前的日期
     const nMonthsAgo = new Date()
     nMonthsAgo.setMonth(nMonthsAgo.getMonth() - monthsBack)
     const sinceDate = nMonthsAgo.toISOString().split('T')[0]
@@ -250,7 +250,7 @@ export class UserPatternCollector extends BaseCollector {
     const output = await this.execGitCommand(args, path)
     const lines = output.split('\n').filter((line) => line.trim())
 
-    // 按日期分组
+    // 按日期分組
     const dailyCommits = new Map<string, number[]>()
 
     for (const line of lines) {
@@ -262,7 +262,7 @@ export class UserPatternCollector extends BaseCollector {
       const timestamp = parts[0]
       const isoTimestamp = parts[1]
 
-      // 时区过滤
+      // 時區過濾
       if (options.timezone) {
         const timezoneMatch = isoTimestamp.match(/([+-]\d{4})$/)
         if (!timezoneMatch || timezoneMatch[1] !== options.timezone) {
@@ -280,14 +280,14 @@ export class UserPatternCollector extends BaseCollector {
 
         const date = `${match[1]}-${match[2]}-${match[3]}`
 
-        // 计算星期几（0=周日, 1=周一, ..., 6=周六）
+        // 計算星期幾（0=週日, 1=週一, ..., 6=週六）
         const dateObj = new Date(year, month - 1, day)
         const dayOfWeek = dateObj.getDay()
 
-        // 排除周末（0=周日，6=周六）
+        // 排除週末（0=週日，6=週六）
         if (dayOfWeek === 0 || dayOfWeek === 6) continue
 
-        // 上班时间范围：08:00-12:00
+        // 上班時間範圍：08:00-12:00
         if (hour < 8 || hour >= 12) continue
 
         const minutesFromMidnight = hour * 60 + minute
@@ -299,7 +299,7 @@ export class UserPatternCollector extends BaseCollector {
       }
     }
 
-    // 找每天的最早时间
+    // 找每天的最早時間
     const result: DailyCommitTime[] = []
     for (const [date, minutes] of dailyCommits.entries()) {
       const minMinutes = Math.min(...minutes)
@@ -310,15 +310,15 @@ export class UserPatternCollector extends BaseCollector {
   }
 
   /**
-   * 为单个用户采集每日末次提交时间
-   * - 仅工作日（周一到周五）
-   * - 下班时间范围：16:00-02:00（次日）
-   * @param monthsBack 时间窗口（月数），默认6个月
+   * 為單個使用者採集每日末次提交時間
+   * - 僅工作日（週一到週五）
+   * - 下班時間範圍：16:00-02:00（次日）
+   * @param monthsBack 時間視窗（月數），預設6個月
    */
   async getUserDailyLatestCommits(email: string, options: GitLogOptions, monthsBack: number = 6): Promise<DailyCommitTime[]> {
     const { path } = options
 
-    // 计算N个月前的日期
+    // 計算N個月前的日期
     const nMonthsAgo = new Date()
     nMonthsAgo.setMonth(nMonthsAgo.getMonth() - monthsBack)
     const sinceDate = nMonthsAgo.toISOString().split('T')[0]
@@ -330,7 +330,7 @@ export class UserPatternCollector extends BaseCollector {
     const output = await this.execGitCommand(args, path)
     const lines = output.split('\n').filter((line) => line.trim())
 
-    // 按日期分组
+    // 按日期分組
     const dailyCommits = new Map<string, number[]>()
 
     for (const line of lines) {
@@ -342,7 +342,7 @@ export class UserPatternCollector extends BaseCollector {
       const timestamp = parts[0]
       const isoTimestamp = parts[1]
 
-      // 时区过滤
+      // 時區過濾
       if (options.timezone) {
         const timezoneMatch = isoTimestamp.match(/([+-]\d{4})$/)
         if (!timezoneMatch || timezoneMatch[1] !== options.timezone) {
@@ -360,17 +360,17 @@ export class UserPatternCollector extends BaseCollector {
 
         const date = `${match[1]}-${match[2]}-${match[3]}`
 
-        // 计算星期几（0=周日, 1=周一, ..., 6=周六）
+        // 計算星期幾（0=週日, 1=週一, ..., 6=週六）
         const dateObj = new Date(year, month - 1, day)
         const dayOfWeek = dateObj.getDay()
 
-        // 排除周末（0=周日，6=周六）
+        // 排除週末（0=週日，6=週六）
         if (dayOfWeek === 0 || dayOfWeek === 6) continue
 
         const minutesFromMidnight = hour * 60 + minute
 
-        // 下班时间范围：16:00-02:00（次日凌晨）
-        // 16:00 = 960分钟, 02:00 = 120分钟
+        // 下班時間範圍：16:00-02:00（次日凌晨）
+        // 16:00 = 960分鐘, 02:00 = 120分鐘
         if (!(minutesFromMidnight >= 960 || minutesFromMidnight <= 120)) continue
 
         if (!dailyCommits.has(date)) {
@@ -380,7 +380,7 @@ export class UserPatternCollector extends BaseCollector {
       }
     }
 
-    // 找每天的最晚时间
+    // 找每天的最晚時間
     const result: DailyCommitTime[] = []
     for (const [date, minutes] of dailyCommits.entries()) {
       const maxMinutes = Math.max(...minutes)
@@ -391,8 +391,8 @@ export class UserPatternCollector extends BaseCollector {
   }
 
   /**
-   * 批量采集多个用户的工作模式数据
-   * @param monthsBackForWorkPattern 团队工作模式的时间窗口（默认6个月）
+   * 批量採集多個使用者的工作模式資料
+   * @param monthsBackForWorkPattern 團隊工作模式的時間視窗（預設6個月）
    */
   async collectUserPatterns(
     coreContributors: ContributorInfo[],

@@ -1,18 +1,18 @@
 /**
- * 统计工具函数
- * 提供常用的统计计算方法
+ * 統計工具函數
+ * 提供常用的統計計算方法
  */
 
 /**
- * 计算百分位数
- * @param sortedValues 已排序的数值数组
+ * 計算百分位數
+ * @param sortedValues 已排序的數值陣列
  * @param percentile 百分位（0-100）
- * @returns 计算得到的百分位值
+ * @returns 計算得到的百分位值
  *
  * @example
- * calculatePercentile([1, 2, 3, 4, 5], 50) // 返回 3 (中位数)
- * calculatePercentile([1, 2, 3, 4, 5], 25) // 返回 2 (第一四分位数)
- * calculatePercentile([1, 2, 3, 4, 5], 75) // 返回 4 (第三四分位数)
+ * calculatePercentile([1, 2, 3, 4, 5], 50) // 傳回 3 (中位數)
+ * calculatePercentile([1, 2, 3, 4, 5], 25) // 傳回 2 (第一四分位數)
+ * calculatePercentile([1, 2, 3, 4, 5], 75) // 傳回 4 (第三四分位數)
  */
 export function calculatePercentile(sortedValues: number[], percentile: number): number {
   if (sortedValues.length === 0) return 0

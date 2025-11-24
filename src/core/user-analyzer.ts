@@ -12,25 +12,25 @@ import { calculatePercentile } from '../utils/statistics'
 import { calculate996Index } from './calculator'
 
 /**
- * 用户分析器
- * 负责对每个用户进行独立的工作时间分析和996指数计算，
- * 并在团队层面进行统计和聚类分析
+ * 使用者分析器
+ * 負責對每個使用者進行獨立的工作時間分析和996指數計算，
+ * 並在團隊層面進行統計和聚類分析
  */
 export class UserAnalyzer {
   /**
-   * 分析单个用户的工作模式
-   * @param baselineEndHour 团队基准下班时间（可选，用于分类）
+   * 分析單個使用者的工作模式
+   * @param baselineEndHour 團隊基準下班時間（可選，用於分類）
    */
   static analyzeUser(userData: UserPatternData, totalCommits: number, baselineEndHour?: number): UserWorkPattern {
     const { contributor, timeDistribution, dayDistribution, dailyFirstCommits, dailyLatestCommits } = userData
 
-    // 计算工作时间（传入空数组作为dailyFirstCommits，因为我们没有单个用户的每日首提数据）
+    // 計算工作時間（傳入空陣列作為dailyFirstCommits，因為我們沒有單個使用者的每日首提資料）
     const workingHours = WorkTimeAnalyzer.detectWorkingHours(timeDistribution, [])
 
-    // 计算基于每日首末commit的平均上下班时间
+    // 計算基於每日首末commit的平均上下班時間
     const avgTimes = this.calculateAverageWorkTimes(dailyFirstCommits, dailyLatestCommits)
 
-    // 构建工作时间数据用于996指数计算（使用真实的星期分布）
+    // 建構工作時間資料用於996指數計算（使用真實的星期分布）
     const workTimeData = this.buildWorkTimeData(
       timeDistribution,
       dayDistribution,
@@ -38,13 +38,13 @@ export class UserAnalyzer {
       workingHours.endHour
     )
 
-    // 计算996指数
+    // 計算996指數
     const result996 = calculate996Index(workTimeData)
 
-    // 计算加班统计（简化版）
+    // 計算加班統計（簡化版）
     const overtimeStats = this.calculateOvertimeStats(timeDistribution, workingHours.startHour, workingHours.endHour)
 
-    // 判断工作强度等级（使用基准下班时间，如果没有则使用默认值18）
+    // 判斷工作強度等級（使用基準下班時間，如果沒有則使用預設值18）
     const intensityLevel = this.classifyIntensityLevel(workingHours.endHour, baselineEndHour)
 
     return {
@@ -62,8 +62,8 @@ export class UserAnalyzer {
   }
 
   /**
-   * 计算用户的平均上下班时间（中位数）
-   * 要求：至少10天或20次有效数据
+   * 計算使用者的平均上下班時間（中位數）
+   * 要求：至少10天或20次有效資料
    */
   private static calculateAverageWorkTimes(
     dailyFirstCommits: Array<{ minutesFromMidnight: number }>,
@@ -73,7 +73,7 @@ export class UserAnalyzer {
     avgEndTimeMedian?: number
     validDays?: number
   } {
-    // 检查是否有足够的数据（至少10天或20次）
+    // 檢查是否有足夠的資料（至少10天或20次）
     const minDays = 10
     const minCommits = 20
 
@@ -90,26 +90,26 @@ export class UserAnalyzer {
       validDays?: number
     } = {}
 
-    // 计算上班时间（中位数）
+    // 計算上班時間（中位數）
     if (hasEnoughStartData) {
       const startMinutes = dailyFirstCommits.map((c) => c.minutesFromMidnight)
-      result.avgStartTimeMedian = this.calculateMedian(startMinutes) / 60 // 转换为小时
+      result.avgStartTimeMedian = this.calculateMedian(startMinutes) / 60 // 轉換為小時
     }
 
-    // 计算下班时间（中位数）
+    // 計算下班時間（中位數）
     if (hasEnoughEndData) {
       const endMinutes = dailyLatestCommits.map((c) => c.minutesFromMidnight)
       result.avgEndTimeMedian = this.calculateMedian(endMinutes) / 60
     }
 
-    // 记录有效天数（取较小值）
+    // 記錄有效天數（取較小值）
     result.validDays = Math.min(dailyFirstCommits.length, dailyLatestCommits.length)
 
     return result
   }
 
   /**
-   * 计算中位数
+   * 計算中位數
    */
   private static calculateMedian(values: number[]): number {
     if (values.length === 0) return 0
@@ -122,7 +122,7 @@ export class UserAnalyzer {
   }
 
   /**
-   * 构建工作时间数据（用于996指数计算）
+   * 建構工作時間資料（用於996指數計算）
    */
   private static buildWorkTimeData(
     timeDistribution: TimeCount[],
@@ -130,7 +130,7 @@ export class UserAnalyzer {
     startHour: number,
     endHour: number
   ): { workHourPl: WorkTimePl; workWeekPl: WorkWeekPl; hourData: TimeCount[] } {
-    // 统计正常工作时间和加班时间的提交数
+    // 統計正常工作時間和加班時間的提交數
     let normalWork = 0
     let overtime = 0
 
@@ -143,8 +143,8 @@ export class UserAnalyzer {
       }
     }
 
-    // 使用真实的星期分布数据
-    // 周一到周五（1-5）为工作日，周六日（6-7）为周末
+    // 使用真實的星期分布資料
+    // 週一到週五（1-5）為工作日，週六日（6-7）為週末
     let workdayCommits = 0
     let weekendCommits = 0
 
@@ -164,7 +164,7 @@ export class UserAnalyzer {
 
     const workWeekPl: WorkWeekPl = [
       { time: '工作日', count: workdayCommits },
-      { time: '周末', count: weekendCommits },
+      { time: '週末', count: weekendCommits },
     ]
 
     return {
@@ -175,7 +175,7 @@ export class UserAnalyzer {
   }
 
   /**
-   * 计算加班统计（简化版）
+   * 計算加班統計（簡化版）
    */
   private static calculateOvertimeStats(timeDistribution: TimeCount[], startHour: number, endHour: number) {
     let totalOvertime = 0
@@ -187,7 +187,7 @@ export class UserAnalyzer {
       }
     }
 
-    // 简化处理：假设加班中80%在工作日，20%在周末
+    // 簡化處理：假設加班中80%在工作日，20%在週末
     const workdayOvertime = Math.round(totalOvertime * 0.8)
     const weekendOvertime = totalOvertime - workdayOvertime
 
@@ -199,15 +199,15 @@ export class UserAnalyzer {
   }
 
   /**
-   * 根据下班时间判断工作强度等级
-   * @param endHour 个人下班时间
-   * @param baselineEndHour 团队基准下班时间（默认18）
+   * 根據下班時間判斷工作強度等級
+   * @param endHour 個人下班時間
+   * @param baselineEndHour 團隊基準下班時間（預設18）
    */
   private static classifyIntensityLevel(endHour: number, baselineEndHour: number = 18): WorkIntensityLevel {
-    // 动态计算分类阈值
-    // normal: 基准时间之前
-    // moderate: 基准时间到基准时间+2小时
-    // heavy: 基准时间+2小时之后
+    // 動態計算分類閾值
+    // normal: 基準時間之前
+    // moderate: 基準時間到基準時間+2小時
+    // heavy: 基準時間+2小時之後
     const normalThreshold = baselineEndHour
     const moderateThreshold = baselineEndHour + 2
 
@@ -217,7 +217,7 @@ export class UserAnalyzer {
   }
 
   /**
-   * 分析团队工作模式
+   * 分析團隊工作模式
    */
   static analyzeTeam(
     userPatterns: UserWorkPattern[],
@@ -225,7 +225,7 @@ export class UserAnalyzer {
     totalContributors: number,
     overallIndex: number
   ): TeamAnalysis {
-    // 先计算团队的基准下班时间（使用P50中位数）
+    // 先計算團隊的基準下班時間（使用P50中位數）
     const endTimesForBaseline = userPatterns
       .filter((u) => u.workingHours && u.workingHours.endHour)
       .map((u) => u.workingHours!.endHour)
@@ -233,21 +233,21 @@ export class UserAnalyzer {
 
     const baselineEndHour = endTimesForBaseline.length > 0 ? calculatePercentile(endTimesForBaseline, 50) : 18
 
-    // 根据基准下班时间重新分类工作强度
+    // 根據基準下班時間重新分類工作強度
     userPatterns.forEach((u) => {
       if (u.workingHours) {
         u.intensityLevel = this.classifyIntensityLevel(u.workingHours.endHour, baselineEndHour)
       }
     })
 
-    // 按工作强度分类
+    // 按工作強度分類
     const distribution = {
       normal: userPatterns.filter((u) => u.intensityLevel === 'normal'),
       moderate: userPatterns.filter((u) => u.intensityLevel === 'moderate'),
       heavy: userPatterns.filter((u) => u.intensityLevel === 'heavy'),
     }
 
-    // 统计分析
+    // 統計分析
     const index996List = userPatterns.map((u) => u.index996 || 0).sort((a, b) => a - b)
     const statistics = {
       median996: calculatePercentile(index996List, 50),
@@ -261,7 +261,7 @@ export class UserAnalyzer {
       },
     }
 
-    // 健康度评估
+    // 健康度評估
     const healthAssessment = this.assessTeamHealth(overallIndex, statistics.median996, distribution)
 
     return {
@@ -277,11 +277,11 @@ export class UserAnalyzer {
   }
 
   /**
-   * 计算分位数
+   * 計算分位數
    */
 
   /**
-   * 团队健康度评估
+   * 團隊健康度評估
    */
   private static assessTeamHealth(
     overallIndex: number,
@@ -295,28 +295,28 @@ export class UserAnalyzer {
     const totalCount = distribution.normal.length + distribution.moderate.length + distribution.heavy.length
 
     if (teamMedianIndex < 40) {
-      conclusion = '团队整体节奏良好，工作生活平衡较好。'
+      conclusion = '團隊整體節奏良好，工作生活平衡較好。'
     } else if (teamMedianIndex < 60) {
-      conclusion = '团队整体节奏尚可，存在一定加班情况。'
+      conclusion = '團隊整體節奏尚可，存在一定加班情況。'
     } else if (teamMedianIndex < 80) {
-      conclusion = '团队加班较为普遍，建议关注成员健康。'
+      conclusion = '團隊加班較為普遍，建議關注成員健康。'
     } else {
-      conclusion = '团队加班强度较大，需要重点关注。'
+      conclusion = '團隊加班強度較大，需要重點關注。'
     }
 
-    // 检查是否存在个别严重加班的情况
+    // 檢查是否存在個別嚴重加班的情況
     if (heavyCount > 0 && heavyCount / totalCount < 0.3) {
       const heavyRatio = ((heavyCount / totalCount) * 100).toFixed(0)
-      warning = `检测到 ${heavyCount} 名成员（${heavyRatio}%）存在严重加班情况，建议关注个别成员负荷。`
+      warning = `檢測到 ${heavyCount} 名成員（${heavyRatio}%）存在嚴重加班情況，建議關注個別成員負荷。`
     }
 
-    // 检查整体指数和中位数的差异
+    // 檢查整體指數和中位數的差異
     const indexGap = overallIndex - teamMedianIndex
     if (indexGap > 20) {
       if (warning) {
-        warning += ` 项目整体指数（${overallIndex.toFixed(0)}）明显高于团队中位数（${teamMedianIndex.toFixed(0)}），可能存在个别"卷王"拉高整体数据。`
+        warning += ` 專案整體指數（${overallIndex.toFixed(0)}）明顯高于團隊中位數（${teamMedianIndex.toFixed(0)}），可能存在個別"卷王"拉高整體資料。`
       } else {
-        warning = `项目整体指数（${overallIndex.toFixed(0)}）明显高于团队中位数（${teamMedianIndex.toFixed(0)}），可能存在个别"卷王"拉高整体数据。`
+        warning = `專案整體指數（${overallIndex.toFixed(0)}）明顯高于團隊中位數（${teamMedianIndex.toFixed(0)}），可能存在個別"卷王"拉高整體資料。`
       }
     }
 

@@ -3,48 +3,48 @@ import Table from 'cli-table3'
 import { RepoAnalysisRecord } from '../../../types/git-types'
 
 /**
- * 多仓库对比报表打印器
+ * 多儲存庫對比報表打印器
  */
 export class MultiComparisonPrinter {
   /**
-   * 打印各仓库的 996 指数对比表
-   * @param records 各仓库的分析记录
+   * 打印各儲存庫的 996 指數對比表
+   * @param records 各儲存庫的分析記錄
    */
   static print(records: RepoAnalysisRecord[]): void {
     if (records.length === 0) {
       return
     }
 
-    // 过滤掉提交数为 0 的项目
+    // 過濾掉提交數為 0 的專案
     const filteredRecords = records.filter((record) => {
-      // 保留失败的记录（显示错误状态）
+      // 保留失敗的記錄（顯示錯誤状態）
       if (record.status === 'failed') {
         return true
       }
-      // 只过滤掉成功但没有提交的项目
+      // 只過濾掉成功但沒有提交的專案
       return record.data.totalCommits > 0
     })
 
-    // 如果过滤后没有记录，不显示表格
+    // 如果過濾後沒有記錄，不顯示表格
     if (filteredRecords.length === 0) {
-      console.log(chalk.yellow('⚠️ 所有仓库的提交数均为 0，无法生成对比表'))
+      console.log(chalk.yellow('⚠️ 所有儲存庫的提交數均為 0，無法生成對比表'))
       console.log()
       return
     }
 
-    console.log(chalk.cyan.bold('📊 各仓库996指数对比:'))
+    console.log(chalk.cyan.bold('📊 各儲存庫996指數對比:'))
     console.log()
 
     const table = new Table({
       head: [
-        chalk.bold('序号'),
-        chalk.bold('项目名称'),
-        chalk.bold('996指数'),
+        chalk.bold('序號'),
+        chalk.bold('專案名称'),
+        chalk.bold('996指數'),
         chalk.bold('加班比例'),
-        chalk.bold('提交数'),
-        chalk.bold('参与人数'),
-        chalk.bold('起止时间'),
-        chalk.bold('状态'),
+        chalk.bold('提交數'),
+        chalk.bold('参與人數'),
+        chalk.bold('起止時間'),
+        chalk.bold('状態'),
       ],
       colWidths: [8, 25, 12, 12, 10, 10, 24, 10],
       wordWrap: true,
@@ -54,7 +54,7 @@ export class MultiComparisonPrinter {
       },
     })
 
-    // 按 996 指数降序排序
+    // 按 996 指數降序排序
     const sortedRecords = [...filteredRecords].sort((a, b) => {
       if (a.status === 'failed' && b.status === 'success') return 1
       if (a.status === 'success' && b.status === 'failed') return -1
@@ -96,30 +96,30 @@ export class MultiComparisonPrinter {
     console.log(table.toString())
     console.log()
 
-    // 统计信息
+    // 統計資訊
     const successCount = filteredRecords.filter((r) => r.status === 'success').length
     const failedCount = filteredRecords.length - successCount
     const filteredOutCount = records.length - filteredRecords.length
 
-    console.log(chalk.blue('统计信息:'))
-    console.log(`  成功分析: ${chalk.green(successCount)} 个仓库`)
+    console.log(chalk.blue('統計資訊:'))
+    console.log(`  成功分析: ${chalk.green(successCount)} 個儲存庫`)
     if (failedCount > 0) {
-      console.log(`  分析失败: ${chalk.red(failedCount)} 个仓库`)
+      console.log(`  分析失敗: ${chalk.red(failedCount)} 個儲存庫`)
     }
     if (filteredOutCount > 0) {
-      console.log(`  已过滤（提交数为0）: ${chalk.gray(filteredOutCount)} 个仓库`)
+      console.log(`  已過濾（提交數為0）: ${chalk.gray(filteredOutCount)} 個儲存庫`)
     }
 
-    // 找出加班最严重和最轻松的仓库
+    // 找出加班最嚴重和最轻松的儲存庫
     const successfulRecords = filteredRecords.filter((r) => r.status === 'success')
     if (successfulRecords.length > 1) {
       const maxRecord = successfulRecords.reduce((max, r) => (r.result.index996 > max.result.index996 ? r : max))
       const minRecord = successfulRecords.reduce((min, r) => (r.result.index996 < min.result.index996 ? r : min))
 
       console.log()
-      console.log(`  加班最严重: ${chalk.red(maxRecord.repo.name)} (996指数: ${maxRecord.result.index996.toFixed(1)})`)
+      console.log(`  加班最嚴重: ${chalk.red(maxRecord.repo.name)} (996指數: ${maxRecord.result.index996.toFixed(1)})`)
       console.log(
-        `  工作最轻松: ${chalk.green(minRecord.repo.name)} (996指数: ${minRecord.result.index996.toFixed(1)})`
+        `  工作最轻松: ${chalk.green(minRecord.repo.name)} (996指數: ${minRecord.result.index996.toFixed(1)})`
       )
     }
 
@@ -127,7 +127,7 @@ export class MultiComparisonPrinter {
   }
 
   /**
-   * 根据 996 指数选择颜色
+   * 根據 996 指數選擇顏色
    */
   private static getIndexColor(index: number): (text: string) => string {
     if (index < 50) {
@@ -142,7 +142,7 @@ export class MultiComparisonPrinter {
   }
 
   /**
-   * 截断项目名称
+   * 截斷專案名称
    */
   private static truncateName(name: string, maxLength: number): string {
     if (name.length <= maxLength) {
@@ -152,7 +152,7 @@ export class MultiComparisonPrinter {
   }
 
   /**
-   * 格式化时间范围
+   * 格式化時間範圍
    */
   private static formatTimeRange(firstDate?: string, lastDate?: string): string {
     if (!firstDate && !lastDate) {
@@ -165,7 +165,7 @@ export class MultiComparisonPrinter {
       return `${firstDate} 至今`
     }
 
-    // 如果是同一天，只显示一个日期
+    // 如果是同一天，只顯示一個日期
     if (firstDate === lastDate) {
       return firstDate
     }

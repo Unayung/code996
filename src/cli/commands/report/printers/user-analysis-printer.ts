@@ -5,70 +5,70 @@ import { getIndexColor } from '../../../../utils/formatter'
 import { calculatePercentile } from '../../../../utils/statistics'
 
 /**
- * 团队工作模式分析打印器
- * 负责打印团队工作节奏和健康度评估
+ * 團隊工作模式分析打印器
+ * 負責打印團隊工作節奏和健康度評估
  */
 
 /**
- * 打印团队工作模式分析报表
+ * 打印團隊工作模式分析報表
  */
 export function printTeamAnalysis(analysis: TeamAnalysis): void {
   console.log()
-  console.log(chalk.cyan.bold(`👥 团队工作模式分析 (基于 ${analysis.totalAnalyzed} 位核心贡献者)`))
-  console.log(chalk.gray('   数据来源：最近6个月的工作日commit'))
+  console.log(chalk.cyan.bold(`👥 團隊工作模式分析 (基於 ${analysis.totalAnalyzed} 位核心貢獻者)`))
+  console.log(chalk.gray('   資料來源：最近6個月的工作日commit'))
   console.log(chalk.gray(`━`.repeat(Math.min(getTerminalWidth(), 80))))
   console.log()
 
   // 1. 每日首次提交分布
   printStartTimeDistribution(analysis)
 
-  // 2. 每日末次提交分布（使用百分位数方案）
+  // 2. 每日末次提交分布（使用百分位數方案）
   printEndTimePercentiles(analysis)
 
-  // 3. 工作强度分位数
+  // 3. 工作強度分位數
   printIntensityPercentiles(analysis)
 
-  // 4. 团队健康度评估
+  // 4. 團隊健康度評估
   printHealthAssessment(analysis)
 }
 
 /**
- * 打印每日首次提交分布（基于每日首次commit的中位数）
+ * 打印每日首次提交分布（基於每日首次commit的中位數）
  */
 function printStartTimeDistribution(analysis: TeamAnalysis): void {
-  // 收集有效数据的用户
+  // 蒐集有效資料的使用者
   const usersWithData = analysis.coreContributors.filter((u) => u.avgStartTimeMedian !== undefined)
 
   if (usersWithData.length === 0) return
 
-  // 提取中位数
+  // 提取中位數
   const medianTimes = usersWithData.map((u) => u.avgStartTimeMedian!).sort((a, b) => a - b)
 
-  console.log(chalk.yellow.bold('🌅 每日首次提交分布（按中位数）：'))
+  console.log(chalk.yellow.bold('🌅 每日首次提交分布（按中位數）：'))
   console.log()
 
   const medianP25 = calculatePercentile(medianTimes, 25)
   const medianP50 = calculatePercentile(medianTimes, 50)
   const medianP75 = calculatePercentile(medianTimes, 75)
-  console.log(`   • 较早组（P25）：${formatTime(medianP25)}左右`)
-  console.log(`   • 中位数（P50）：${formatTime(medianP50)}左右  ${chalk.gray('← 团队基准')}`)
-  console.log(`   • 较晚组（P75）：${formatTime(medianP75)}左右`)
+  console.log(`   • 较早組（P25）：${formatTime(medianP25)}左右`)
+  console.log(`   • 中位數（P50）：${formatTime(medianP50)}左右  ${chalk.gray('← 團隊基準')}`)
+  console.log(`   • 较晚組（P75）：${formatTime(medianP75)}左右`)
   console.log()
 }
 
 /**
- * 打印每日末次提交分布（基于每日末次commit的中位数）
+ * 打印每日末次提交分布（基於每日末次commit的中位數）
  */
 function printEndTimePercentiles(analysis: TeamAnalysis): void {
-  // 收集有效数据的用户
+  // 蒐集有效資料的使用者
   const usersWithData = analysis.coreContributors.filter((u) => u.avgEndTimeMedian !== undefined)
 
   if (usersWithData.length === 0) return
 
-  // 提取中位数
+  // 提取中位數
   const medianTimes = usersWithData.map((u) => u.avgEndTimeMedian!).sort((a, b) => a - b)
 
-  console.log(chalk.yellow.bold('🌙 每日末次提交分布（按中位数）：'))
+  console.log(chalk.yellow.bold('🌙 每日末次提交分布（按中位數）：'))
   console.log()
 
   const medianP25 = calculatePercentile(medianTimes, 25)
@@ -86,38 +86,38 @@ function printEndTimePercentiles(analysis: TeamAnalysis): void {
   const pctMedianP75 = ((countMedianP75 / total) * 100).toFixed(0)
   const pctMedianOver = ((countMedianOver / total) * 100).toFixed(0)
 
-  console.log(`   • 较早组（P25）：${formatTime(medianP25)}左右  (${countMedianP25}人, ${pctMedianP25}%)`)
+  console.log(`   • 较早組（P25）：${formatTime(medianP25)}左右  (${countMedianP25}人, ${pctMedianP25}%)`)
   console.log(
-    `   • 中位数（P50）：${formatTime(medianP50)}左右  (${countMedianP50}人, ${pctMedianP50}%)  ${chalk.gray('← 团队基准')}`
+    `   • 中位數（P50）：${formatTime(medianP50)}左右  (${countMedianP50}人, ${pctMedianP50}%)  ${chalk.gray('← 團隊基準')}`
   )
-  console.log(`   • 较晚组（P75）：${formatTime(medianP75)}左右  (${countMedianP75}人, ${pctMedianP75}%)`)
+  console.log(`   • 较晚組（P75）：${formatTime(medianP75)}左右  (${countMedianP75}人, ${pctMedianP75}%)`)
   if (countMedianOver > 0) {
-    console.log(`   • 持续工作（>P75）：${formatTime(medianP75)}之后   (${countMedianOver}人, ${pctMedianOver}%)`)
+    console.log(`   • 持續工作（>P75）：${formatTime(medianP75)}之後   (${countMedianOver}人, ${pctMedianOver}%)`)
   }
   console.log()
 
-  // 分类评估（使用中位数的P50作为基准）
+  // 分類評估（使用中位數的P50作為基準）
   const baselineEndHour = medianP50
   let assessment = ''
   if (baselineEndHour < 18.5) {
-    assessment = '团队整体下班时间正常，工作生活平衡较好'
+    assessment = '團隊整體下班時間正常，工作生活平衡较好'
   } else if (baselineEndHour < 20) {
-    assessment = '团队整体下班时间集中在适度加班区间'
+    assessment = '團隊整體下班時間集中在適度加班区間'
   } else if (baselineEndHour < 21.5) {
-    assessment = '团队整体加班较为普遍，建议关注成员健康'
+    assessment = '團隊整體加班较為普遍，建議關注成员健康'
   } else {
-    assessment = '团队整体下班时间偏晚，加班强度较大'
+    assessment = '團隊整體下班時間偏晚，加班強度较大'
   }
 
-  console.log(`   ${chalk.gray('分类评估：' + assessment)}`)
+  console.log(`   ${chalk.gray('分類評估：' + assessment)}`)
   console.log()
 }
 
 /**
- * 打印工作强度分位数
+ * 打印工作強度分位數
  */
 function printIntensityPercentiles(analysis: TeamAnalysis): void {
-  console.log(chalk.yellow.bold('📈 工作强度分位数：'))
+  console.log(chalk.yellow.bold('📈 工作強度分位數：'))
   console.log()
 
   const { percentiles } = analysis.statistics
@@ -128,33 +128,33 @@ function printIntensityPercentiles(analysis: TeamAnalysis): void {
   const p90Color = getIndexColor(percentiles.p90)
 
   console.log(
-    `   - P25 (25%的人): 996指数 ≤ ${p25Color(percentiles.p25.toFixed(0))}  ${getIndexDescription(percentiles.p25)}`
+    `   - P25 (25%的人): 996指數 ≤ ${p25Color(percentiles.p25.toFixed(0))}  ${getIndexDescription(percentiles.p25)}`
   )
   console.log(
-    `   - P50 (中位数):  996指数 = ${p50Color(percentiles.p50.toFixed(0))}  ${getIndexDescription(percentiles.p50)}`
+    `   - P50 (中位數):  996指數 = ${p50Color(percentiles.p50.toFixed(0))}  ${getIndexDescription(percentiles.p50)}`
   )
   console.log(
-    `   - P75 (75%的人): 996指数 ≤ ${p75Color(percentiles.p75.toFixed(0))}  ${getIndexDescription(percentiles.p75)}`
+    `   - P75 (75%的人): 996指數 ≤ ${p75Color(percentiles.p75.toFixed(0))}  ${getIndexDescription(percentiles.p75)}`
   )
   console.log(
-    `   - P90 (90%的人): 996指数 ≤ ${p90Color(percentiles.p90.toFixed(0))}  ${getIndexDescription(percentiles.p90)}`
+    `   - P90 (90%的人): 996指數 ≤ ${p90Color(percentiles.p90.toFixed(0))}  ${getIndexDescription(percentiles.p90)}`
   )
   console.log()
 }
 
 /**
- * 打印团队健康度评估
+ * 打印團隊健康度評估
  */
 function printHealthAssessment(analysis: TeamAnalysis): void {
   const { healthAssessment } = analysis
   const overallColor = getIndexColor(healthAssessment.overallIndex)
   const medianColor = getIndexColor(healthAssessment.teamMedianIndex)
 
-  console.log(chalk.yellow.bold('💡 团队健康度评估：'))
+  console.log(chalk.yellow.bold('💡 團隊健康度評估：'))
   console.log()
-  console.log(`   - 项目整体 996 指数: ${overallColor(healthAssessment.overallIndex.toFixed(1))}`)
-  console.log(`   - 团队中位数 996 指数: ${medianColor(healthAssessment.teamMedianIndex.toFixed(1))}`)
-  console.log(`   - 结论：${healthAssessment.conclusion}`)
+  console.log(`   - 專案整體 996 指數: ${overallColor(healthAssessment.overallIndex.toFixed(1))}`)
+  console.log(`   - 團隊中位數 996 指數: ${medianColor(healthAssessment.teamMedianIndex.toFixed(1))}`)
+  console.log(`   - 結论：${healthAssessment.conclusion}`)
 
   if (healthAssessment.warning) {
     console.log()
@@ -165,7 +165,7 @@ function printHealthAssessment(analysis: TeamAnalysis): void {
 }
 
 /**
- * 格式化时间（小时 → HH:MM）
+ * 格式化時間（小時 → HH:MM）
  */
 function formatTime(hours: number): string {
   const h = Math.floor(hours)
@@ -174,7 +174,7 @@ function formatTime(hours: number): string {
 }
 
 /**
- * 获取996指数的描述
+ * 獲取996指數的描述
  */
 function getIndexDescription(index: number): string {
   if (index < 40) return chalk.green('(较轻松)')
@@ -184,5 +184,5 @@ function getIndexDescription(index: number): string {
 }
 
 /**
- * 计算百分位数
+ * 計算百分位數
  */

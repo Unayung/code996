@@ -3,26 +3,26 @@ import { ParsedGitData, TimeCount } from '../../../../types/git-types'
 import { TimeAggregator } from '../../../../utils/time-aggregator'
 
 /**
- * 时间分布打印器
- * 负责打印24小时和星期分布图表
+ * 時間分布打印器
+ * 負責打印24小時和星期分布图表
  */
 
-/** 打印 24 小时提交分布与星期分布图形 */
+/** 打印 24 小時提交分布與星期分布图形 */
 export function printTimeDistribution(parsedData: ParsedGitData, halfHourMode = false): void {
   const barLength = 20
 
-  // 根据模式决定展示的数据
+  // 根據模式決定展示的資料
   const displayData: TimeCount[] = halfHourMode
     ? parsedData.hourData // 直接展示48点
-    : TimeAggregator.aggregateToHour(parsedData.hourData) // 聚合为24点
+    : TimeAggregator.aggregateToHour(parsedData.hourData) // 聚合為24点
 
-  const title = halfHourMode ? '🕐 24小时分布（半小时粒度）:' : '🕐 24小时分布:'
+  const title = halfHourMode ? '🕐 24小時分布（半小時粒度）:' : '🕐 24小時分布:'
   console.log(chalk.cyan.bold(title))
 
   const maxCount = Math.max(0, ...displayData.map((item: TimeCount) => item.count))
 
   if (maxCount === 0) {
-    console.log('暂无提交数据')
+    console.log('暫無提交資料')
     console.log()
   } else {
     displayData.forEach((hour: TimeCount) => {
@@ -35,7 +35,7 @@ export function printTimeDistribution(parsedData: ParsedGitData, halfHourMode = 
       const bar = '█'.repeat(filledLength) + ' '.repeat(barLength - filledLength)
       const countText = hour.count.toString().padStart(3)
 
-      // 格式化时间显示：半小时模式显示 "09:30"，小时模式显示 "09"
+      // 格式化時間顯示：半小時模式顯示 "09:30"，小時模式顯示 "09"
       const timeLabel = halfHourMode ? hour.time.padStart(5) : hour.time.padStart(2)
       console.log(`${timeLabel}: ${bar} ${countText}`)
     })
@@ -45,18 +45,18 @@ export function printTimeDistribution(parsedData: ParsedGitData, halfHourMode = 
 
   console.log(chalk.cyan.bold('📅 星期分布:'))
 
-  const weekDayNames = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+  const weekDayNames = ['週一', '週二', '週三', '週四', '週五', '週六', '週日']
   const maxDayCount = Math.max(0, ...parsedData.dayData.map((item) => item.count))
   const totalDayCount = parsedData.dayData.reduce((sum, item) => sum + item.count, 0)
 
   if (totalDayCount === 0) {
-    console.log('暂无星期提交数据')
+    console.log('暫無星期提交資料')
     console.log()
     return
   }
 
   parsedData.dayData.forEach((day) => {
-    const dayIndex = parseInt(day.time, 10) - 1 // 1-7 转换为 0-6
+    const dayIndex = parseInt(day.time, 10) - 1 // 1-7 轉換為 0-6
     const dayName = weekDayNames[dayIndex] || '未知'
     const percentage = totalDayCount > 0 ? ((day.count / totalDayCount) * 100).toFixed(1) : '0.0'
 

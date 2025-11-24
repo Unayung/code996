@@ -3,25 +3,25 @@ import { detectEndHourWindow } from './end-hour-detector'
 import { TimeAggregator } from '../utils/time-aggregator'
 
 /**
- * 工作时间分析器
- * 根据每日最早提交时间推算上班时间，并利用小时分布估计下班时间
+ * 工作時間分析器
+ * 根據每日最早提交時間推算上班時間，並利用小時分布估计下班時間
  */
 export class WorkTimeAnalyzer {
-  private static readonly STANDARD_WORK_HOURS = 9 // 默认工作时长兜底
-  private static readonly MIN_VALID_MINUTES = 5 * 60 // 过滤非正常数据（早于5点视为无效）
-  private static readonly MAX_VALID_MINUTES = 12 * 60 // 晚于中午12点视为无效
+  private static readonly STANDARD_WORK_HOURS = 9 // 預設工作時长兜底
+  private static readonly MIN_VALID_MINUTES = 5 * 60 // 過濾非正常資料（早於5点视為無效）
+  private static readonly MAX_VALID_MINUTES = 12 * 60 // 晚於中午12点视為無效
 
   /**
-   * 检测工作时间
-   * @param hourData 按小时或半小时统计的提交数量
-   * @param dayData 按星期统计的提交数量（保留参数以兼容旧逻辑）
-   * @param dailyFirstCommits 每日最早提交时间集合
+   * 檢測工作時間
+   * @param hourData 按小時或半小時統計的提交數量
+   * @param dayData 按星期統計的提交數量（保留参數以相容舊逻辑）
+   * @param dailyFirstCommits 每日最早提交時間集合
    */
   static detectWorkingHours(
     hourData: TimeCount[],
     dailyFirstCommits: DailyFirstCommit[] = []
   ): WorkTimeDetectionResult {
-    // 如果是半小时数据，先聚合为小时数据用于算法分析
+    // 如果是半小時資料，先聚合為小時資料用於算法分析
     const granularity = TimeAggregator.detectGranularity(hourData)
     const hourDataForAnalysis = granularity === 'half-hour' ? TimeAggregator.aggregateToHour(hourData) : hourData
 
@@ -67,19 +67,19 @@ export class WorkTimeAnalyzer {
   }
 
   /**
-   * 根据识别结果判断某个整点是否属于工作时间
+   * 根據識別結果判斷某個整点是否屬於工作時間
    */
   static isWorkingHour(hour: number, detection: WorkTimeDetectionResult): boolean {
     const hourStartMinutes = hour * 60
     const startMinutes = detection.startHour * 60
-    // 加班判定：即便检测到更晚的下班时间，正常工时最多只统计 9 小时
+    // 加班判定：即便檢測到更晚的下班時間，正常工時最多只統計 9 小時
     const cappedEndHour = Math.min(detection.endHour, detection.startHour + this.STANDARD_WORK_HOURS)
     const endMinutes = Math.max(startMinutes, cappedEndHour * 60)
     return hourStartMinutes >= startMinutes && hourStartMinutes < endMinutes
   }
 
   /**
-   * 过滤异常的每日最早提交数据（如凌晨噪点）
+   * 過濾異常的每日最早提交資料（如凌晨噪点）
    */
   private static filterValidDailyCommits(dailyFirstCommits: DailyFirstCommit[]): DailyFirstCommit[] {
     return dailyFirstCommits.filter((item) => {
@@ -93,7 +93,7 @@ export class WorkTimeAnalyzer {
   }
 
   /**
-   * 计算分钟数组的分位数，若样本不足则回退到给定的默认值
+   * 計算分鐘陣列的分位數，若樣本不足則回退到給定的預設值
    */
   private static calculateQuantile(samples: number[], quantile: number, fallback: number): number {
     if (!samples || samples.length === 0) {
@@ -112,7 +112,7 @@ export class WorkTimeAnalyzer {
   }
 
   /**
-   * 将分钟数向下取整到最近的 30 分钟刻度
+   * 將分鐘數向下取整到最近的 30 分鐘刻度
    */
   private static roundDownToHalfHour(minutes: number): number {
     const halfHourBlock = Math.floor(minutes / 30)
@@ -120,7 +120,7 @@ export class WorkTimeAnalyzer {
   }
 
   /**
-   * 构建上班时间段，基于分位数生成最长 1 小时的范围
+   * 建構上班時間段，基於分位數生成最长 1 小時的範圍
    */
   private static buildStartHourRange(
     lowerMinutes: number,
@@ -135,7 +135,7 @@ export class WorkTimeAnalyzer {
     const start = Math.min(sanitizedLower, sanitizedUpper)
     let end = Math.max(sanitizedUpper, start + 30)
 
-    // 限制范围不超过 1 小时，且不晚于中午 12 点
+    // 限制範圍不超過 1 小時，且不晚於中午 12 点
     end = Math.min(end, start + 60, this.MAX_VALID_MINUTES)
 
     return {
@@ -145,7 +145,7 @@ export class WorkTimeAnalyzer {
   }
 
   /**
-   * 根据最早上班时间推导标准 9 小时工作日的下班时间段
+   * 根據最早上班時間推導標準 9 小時工作日的下班時間段
    */
   private static buildEndHourRange(startHour: number, endHour: number): { startHour: number; endHour: number } {
     const startMinutes = this.roundDownToHalfHour(Math.max(startHour * 60, this.MIN_VALID_MINUTES))
@@ -163,15 +163,15 @@ export class WorkTimeAnalyzer {
   }
 
   /**
-   * 根据样本数量估算置信度（百分比）
-   * 使用渐近函数，无限趋近90%但永不达到
+   * 根據樣本數量估算置信度（百分比）
+   * 使用渐近函數，無限趋近90%但永不達到
    */
   private static estimateConfidence(sampleDays: number): number {
     if (sampleDays <= 0) {
       return 0
     }
 
-    // 使用渐近函数：confidence = 90 * sampleDays / (sampleDays + 50)
+    // 使用渐近函數：confidence = 90 * sampleDays / (sampleDays + 50)
     const confidence = (90 * sampleDays) / (sampleDays + 50)
     return Math.round(confidence)
   }

@@ -1,28 +1,28 @@
 import Table from 'cli-table3'
 
 /**
- * 获取终端宽度，设置合理范围
- * @returns 终端宽度（字符数）
+ * 獲取終端宽度，設定合理範圍
+ * @returns 終端宽度（字符數）
  */
 export function getTerminalWidth(): number {
   try {
-    // 获取终端宽度，设置合理范围
+    // 獲取終端宽度，設定合理範圍
     const width = process.stdout.columns || 80
-    return Math.max(40, Math.min(width, 200)) // 限制在40-200字符之间，支持更窄的终端
+    return Math.max(40, Math.min(width, 200)) // 限制在40-200字符之間，支援更窄的終端
   } catch {
     return 80 // 降级方案
   }
 }
 
 /**
- * 计算时间范围，默认为最近一年
- * @param allTime 是否查询所有时间
+ * 計算時間範圍，預設為最近一年
+ * @param allTime 是否查詢所有時間
  * @returns { since: string, until: string }
  */
 export function calculateTimeRange(allTime: boolean = false): { since: string; until: string } {
   if (allTime) {
     return {
-      since: '1970-01-01', // Unix纪元开始
+      since: '1970-01-01', // Unix紀元開始
       until: '2100-01-01', // 远期日期
     }
   }
@@ -31,7 +31,7 @@ export function calculateTimeRange(allTime: boolean = false): { since: string; u
   const oneYearAgo = new Date()
   oneYearAgo.setFullYear(today.getFullYear() - 1)
 
-  // 格式化为YYYY-MM-DD
+  // 格式化為YYYY-MM-DD
   const since = oneYearAgo.toISOString().split('T')[0]
   const until = today.toISOString().split('T')[0]
 
@@ -39,30 +39,30 @@ export function calculateTimeRange(allTime: boolean = false): { since: string; u
 }
 
 /**
- * 计算趋势报告表格列宽（10列表头），根据终端宽度自适应
- * @param terminalWidth 终端宽度
- * @returns 10列宽度数组
+ * 計算趨勢報告表格列宽（10列表头），根據終端宽度自適應
+ * @param terminalWidth 終端宽度
+ * @returns 10列宽度陣列
  */
 export function calculateTrendTableWidths(terminalWidth: number): number[] {
   const columnCount = 10
-  const baseWidths = [9, 10, 10, 10, 10, 10, 8, 10, 12, 10] // 月份、指数、平均工时、平均开始、平均结束、最晚结束、提交数、参与人数、工作天数、置信度
+  const baseWidths = [9, 10, 10, 10, 10, 10, 8, 10, 12, 10] // 月份、指數、平均工時、平均開始、平均結束、最晚結束、提交數、参與人數、工作天數、置信度
   const minColumnWidth = 3
 
-  // 估算边框和分隔线占用：列间分隔线(columnCount-1) + 左右边框2，共 columnCount 个字符
+  // 估算边框和分隔線占用：列間分隔線(columnCount-1) + 左右边框2，共 columnCount 個字符
   const borderOverhead = columnCount
   const availableWidth = Math.max(terminalWidth - borderOverhead, columnCount)
 
   const baseTotal = baseWidths.reduce((sum, width) => sum + width, 0)
 
-  // 如果基础宽度总和超过可用宽度，需要压缩
+  // 如果基础宽度總和超過可用宽度，需要压缩
   if (baseTotal > availableWidth) {
     const scale = availableWidth / baseTotal
     let widths = baseWidths.map((width) => Math.max(minColumnWidth, Math.floor(width * scale)))
     let currentSum = widths.reduce((sum, width) => sum + width, 0)
 
-    // 如果超过可用宽度，则在不低于最小值的前提下依次回收
+    // 如果超過可用宽度，則在不低于最小值的前提下依次回收
     let index = 0
-    let safetyGuard = columnCount * 10 // 防止极端情况下死循环
+    let safetyGuard = columnCount * 10 // 防止極端情況下死循環
     while (currentSum > availableWidth && safetyGuard > 0) {
       const col = index % columnCount
       if (widths[col] > minColumnWidth) {
@@ -75,17 +75,17 @@ export function calculateTrendTableWidths(terminalWidth: number): number[] {
     return widths
   }
 
-  // 基础宽度适合，直接使用，不再扩展填满
+  // 基础宽度適合，直接使用，不再扩展填滿
   return baseWidths
 }
 
 /**
- * 创建自适应表格
- * @param terminalWidth 终端宽度
- * @param tableType 表格类型
- * @param options 表格选项
- * @param customColWidths 手动指定的列宽数组，可覆盖默认计算结果
- * @returns Table实例
+ * 创建自適應表格
+ * @param terminalWidth 終端宽度
+ * @param tableType 表格類型
+ * @param options 表格選項
+ * @param customColWidths 手动指定的列宽陣列，可涵蓋預設計算結果
+ * @returns Table實例
  */
 export function createAdaptiveTable(
   terminalWidth: number,
@@ -120,12 +120,12 @@ export function createAdaptiveTable(
   const colWidths =
     customColWidths && customColWidths.length > 0
       ? customColWidths
-      : calculatePresetTableWidths(tableType, terminalWidth) // 按类型获取默认列宽，自动处理兜底逻辑
+      : calculatePresetTableWidths(tableType, terminalWidth) // 按類型獲取預設列宽，自動處理兜底逻辑
 
   return new Table({
     ...defaultOptions,
     ...options,
-    // 确保 wordWrap / wrapOnWordBoundary / truncate 使用统一默认值
+    // 確保 wordWrap / wrapOnWordBoundary / truncate 使用統一預設值
     wordWrap: options.wordWrap !== undefined ? options.wordWrap : defaultOptions.wordWrap,
     wrapOnWordBoundary:
       options.wrapOnWordBoundary !== undefined ? options.wrapOnWordBoundary : defaultOptions.wrapOnWordBoundary,
@@ -135,13 +135,13 @@ export function createAdaptiveTable(
 }
 
 /**
- * 统一计算 core/stats/time 三种表格的列宽，并为未知类型提供兜底方案，避免重复逻辑
- * @param tableType 表格类型
- * @param terminalWidth 终端宽度
+ * 統一計算 core/stats/time 三種表格的列宽，並為未知類型提供兜底方案，避免重复逻辑
+ * @param tableType 表格類型
+ * @param terminalWidth 終端宽度
  */
 function calculatePresetTableWidths(tableType: 'core' | 'stats' | 'time' | string, terminalWidth: number): number[] {
   if (tableType === 'time') {
-    // 时间分布表格：保留固定的时间列，剩余宽度用于进度条
+    // 時間分布表格：保留固定的時間列，剩余宽度用於進度條
     const fixedOverhead = 5
     const availableWidth = terminalWidth - fixedOverhead
     const timeColumnWidth = 5
@@ -150,7 +150,7 @@ function calculatePresetTableWidths(tableType: 'core' | 'stats' | 'time' | strin
   }
 
   if (tableType === 'core' || tableType === 'stats') {
-    // core/stats 都是双列结构，差别仅在标签列的约束
+    // core/stats 都是双列結構，差別僅在標籤列的約束
     const config =
       tableType === 'core'
         ? { labelMin: 15, labelRatioMax: 0.25, labelHardMax: 20 }
@@ -159,21 +159,21 @@ function calculatePresetTableWidths(tableType: 'core' | 'stats' | 'time' | strin
     return calculateTwoColumnWidths(terminalWidth, config)
   }
 
-  // 未知类型默认退回到通用的双列表配置，保证不会抛异常
+  // 未知類型預設退回到通用的双列表配置，保證不會抛異常
   return [15, 70]
 }
 
 /**
- * 统一的两列表布局计算函数，避免重复逻辑
- * @param terminalWidth 终端宽度
+ * 統一的兩列表布局計算函數，避免重复逻辑
+ * @param terminalWidth 終端宽度
  * @param options 列宽配置
- * @returns 列宽数组
+ * @returns 列宽陣列
  */
 function calculateTwoColumnWidths(
   terminalWidth: number,
   options: { labelMin: number; labelRatioMax: number; labelHardMax: number }
 ): number[] {
-  // 固定边框和间距占用：左右边框2个字符 + 内边距2个字符 + 分隔符1个字符 = 5字符
+  // 固定边框和間距占用：左右边框2個字符 + 内边距2個字符 + 分隔符1個字符 = 5字符
   const fixedOverhead = 5
   const availableWidth = terminalWidth - fixedOverhead
 

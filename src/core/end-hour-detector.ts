@@ -9,7 +9,7 @@ export interface EndHourWindow {
 }
 
 /**
- * 识别下班时间区间（从晚间回溯，尽量贴近实际加班结束点）
+ * 識別下班時間区間（從晚間回溯，盡量贴近實際加班結束点）
  */
 export function detectEndHourWindow(hourData: TimeCount[], startHour: number, standardEndHour: number): EndHourWindow {
   const defaultEndHour = Math.min(standardEndHour, 24)

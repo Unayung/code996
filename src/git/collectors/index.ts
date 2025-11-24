@@ -1,5 +1,5 @@
 /**
- * Git数据采集器统一导出
+ * Git資料採集器統一導出
  */
 
 export { BaseCollector } from './base-collector'

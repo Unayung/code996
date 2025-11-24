@@ -8,27 +8,27 @@ import {
 import { UserAnalyzer } from '../core/user-analyzer'
 
 /**
- * 聚合的贡献者信息（跨多个仓库）
+ * 聚合的貢獻者資訊（跨多個儲存庫）
  */
 interface AggregatedContributor {
   email: string
   name: string
-  totalCommits: number // 所有仓库的总提交数
-  repos: Array<{ path: string; commits: number }> // 在各个仓库的提交数
+  totalCommits: number // 所有儲存庫的總提交數
+  repos: Array<{ path: string; commits: number }> // 在各個儲存庫的提交數
 }
 
 /**
- * 多仓库团队分析器
- * 负责聚合多个仓库的数据并进行统一的团队分析
+ * 多儲存庫團隊分析器
+ * 負責聚合多個儲存庫的資料並進行統一的團隊分析
  */
 export class MultiRepoTeamAnalyzer {
   /**
-   * 分析多个仓库的团队工作模式（聚合模式）
-   * @param repoPaths 所有仓库路径
-   * @param options Git日志选项
-   * @param minCommits 最小提交数阈值（默认20）
-   * @param maxUsers 最大分析用户数（默认30）
-   * @param overallIndex 整体996指数（用于对比）
+   * 分析多個儲存庫的團隊工作模式（聚合模式）
+   * @param repoPaths 所有儲存庫路徑
+   * @param options Git日誌選項
+   * @param minCommits 最小提交數閾值（預設20）
+   * @param maxUsers 最大分析使用者數（預設30）
+   * @param overallIndex 整體996指數（用於對比）
    */
   static async analyzeAggregatedTeam(
     repoPaths: string[],
@@ -37,37 +37,37 @@ export class MultiRepoTeamAnalyzer {
     maxUsers: number = 30,
     overallIndex: number = 0
   ): Promise<TeamAnalysis | null> {
-    // 第一步：收集所有仓库的所有贡献者
+    // 第一步：蒐集所有儲存庫的所有貢獻者
     const aggregatedContributors = await this.aggregateContributors(repoPaths, options)
 
-    // 第二步：过滤核心贡献者（总提交数 >= minCommits）
+    // 第二步：過濾核心貢獻者（總提交數 >= minCommits）
     const coreContributors = Array.from(aggregatedContributors.values())
       .filter((c) => c.totalCommits >= minCommits)
       .sort((a, b) => b.totalCommits - a.totalCommits)
       .slice(0, maxUsers)
 
     if (coreContributors.length < 2) {
-      console.log(`\n  核心贡献者数量不足（${coreContributors.length}人），跳过团队分析\n`)
+      console.log(`\n  核心貢獻者數量不足（${coreContributors.length}人），跳過團隊分析\n`)
       return null
     }
 
-    // 第三步：为每个核心贡献者跨仓库采集数据
+    // 第三步：為每個核心貢獻者跨儲存庫採集資料
     const userPatternDataList = await this.aggregateUserDataAcrossRepos(coreContributors, repoPaths, options)
 
-    // 第四步：计算总提交数（用于计算百分比）
+    // 第四步：計算總提交數（用於計算百分比）
     const totalCommits = coreContributors.reduce((sum, c) => sum + c.totalCommits, 0)
 
-    // 第五步：分析每个用户
+    // 第五步：分析每個使用者
     const userPatterns = userPatternDataList.map((userData) => UserAnalyzer.analyzeUser(userData, totalCommits))
 
-    // 第六步：团队层面分析
+    // 第六步：團隊層面分析
     const teamAnalysis = UserAnalyzer.analyzeTeam(userPatterns, minCommits, aggregatedContributors.size, overallIndex)
 
     return teamAnalysis
   }
 
   /**
-   * 聚合所有仓库的贡献者信息
+   * 聚合所有儲存庫的貢獻者資訊
    */
   private static async aggregateContributors(
     repoPaths: string[],
@@ -95,8 +95,8 @@ export class MultiRepoTeamAnalyzer {
           agg.repos.push({ path: repoPath, commits: c.commits })
         }
       } catch (error) {
-        // 跳过无法访问的仓库
-        console.error(`⚠️  无法访问仓库 ${repoPath}:`, error)
+        // 跳過無法存取的儲存庫
+        console.error(`⚠️  無法存取儲存庫 ${repoPath}:`, error)
       }
     }
 
@@ -104,7 +104,7 @@ export class MultiRepoTeamAnalyzer {
   }
 
   /**
-   * 为每个核心贡献者跨仓库聚合数据
+   * 為每個核心貢獻者跨儲存庫聚合資料
    */
   private static async aggregateUserDataAcrossRepos(
     coreContributors: AggregatedContributor[],
@@ -115,7 +115,7 @@ export class MultiRepoTeamAnalyzer {
     const collector = new UserPatternCollector()
 
     for (const contributor of coreContributors) {
-      // 初始化聚合数据
+      // 初始化聚合資料
       const timeDistribution = new Array(24).fill(0).map((_, i) => ({
         time: i.toString().padStart(2, '0'),
         count: 0,
@@ -129,36 +129,36 @@ export class MultiRepoTeamAnalyzer {
       const allDailyFirstCommits: DailyCommitTime[] = []
       const allDailyLatestCommits: DailyCommitTime[] = []
 
-      // 遍历所有仓库，聚合该用户的数据
+      // 遍歷所有儲存庫，聚合該使用者的資料
       for (const repoPath of repoPaths) {
         try {
           const [timeData, dayData, firstCommits, latestCommits] = await Promise.all([
             collector.getUserTimeDistribution(contributor.email, { ...options, path: repoPath }),
             collector.getUserDayDistribution(contributor.email, { ...options, path: repoPath }),
-            collector.getUserDailyFirstCommits(contributor.email, { ...options, path: repoPath }, 6), // 团队工作模式用6个月
+            collector.getUserDailyFirstCommits(contributor.email, { ...options, path: repoPath }, 6), // 團隊工作模式用6個月
             collector.getUserDailyLatestCommits(contributor.email, { ...options, path: repoPath }, 6),
           ])
 
-          // 合并时间分布
+          // 合併時間分布
           for (let i = 0; i < 24; i++) {
             timeDistribution[i].count += timeData[i]?.count || 0
           }
 
-          // 合并星期分布
+          // 合併星期分布
           for (let i = 0; i < 7; i++) {
             dayDistribution[i].count += dayData[i]?.count || 0
           }
 
-          // 合并每日首末提交时间
+          // 合併每日首末提交時間
           allDailyFirstCommits.push(...firstCommits)
           allDailyLatestCommits.push(...latestCommits)
         } catch (error) {
-          // 跳过该仓库
-          console.error(`⚠️  无法为用户 ${contributor.email} 采集仓库 ${repoPath} 的数据`)
+          // 跳過該儲存庫
+          console.error(`⚠️  無法為使用者 ${contributor.email} 採集儲存庫 ${repoPath} 的資料`)
         }
       }
 
-      // 构造ContributorInfo
+      // 建構ContributorInfo
       const contributorInfo: ContributorInfo = {
         author: `${contributor.name} <${contributor.email}>`,
         email: contributor.email,

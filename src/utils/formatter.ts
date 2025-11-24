@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import { ParsedGitData } from '../types/git-types'
 
-/** 将分钟数转换为 HH:MM 字符串，便于展示 */
+/** 將分鐘數轉換為 HH:MM 字符串，便于展示 */
 export function formatMinutesToClock(minutes: number): string {
   const normalized = Math.max(0, minutes)
   const hour = Math.floor(normalized / 60)
@@ -9,7 +9,7 @@ export function formatMinutesToClock(minutes: number): string {
   return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
 }
 
-/** 格式化上班时间展示，括号中显示推测区间 */
+/** 格式化上班時間展示，括號中顯示推測区間 */
 export function formatStartClock(detection: ParsedGitData['detectedWorkTime']): string {
   if (!detection) {
     return '—'
@@ -30,10 +30,10 @@ export function formatStartClock(detection: ParsedGitData['detectedWorkTime']): 
   const rangeStartClock = formatMinutesToClock(Math.round(rangeStart * 60))
   const rangeEndClock = formatMinutesToClock(Math.round(rangeEnd * 60))
 
-  return `${displayClock}（推测上班区间：${rangeStartClock}-${rangeEndClock}）`
+  return `${displayClock}（推測上班区間：${rangeStartClock}-${rangeEndClock}）`
 }
 
-/** 格式化下班时间展示，括号中显示推测区间 */
+/** 格式化下班時間展示，括號中顯示推測区間 */
 export function formatEndClock(detection: ParsedGitData['detectedWorkTime']): string {
   if (!detection) {
     return '—'
@@ -59,10 +59,10 @@ export function formatEndClock(detection: ParsedGitData['detectedWorkTime']): st
   const rangeStart = formatMinutesToClock(Math.round(range.startHour * 60))
   const rangeEnd = formatMinutesToClock(Math.round(range.endHour * 60))
 
-  return `${displayClock}（推测下班区间：${rangeStart}-${rangeEnd}）`
+  return `${displayClock}（推測下班区間：${rangeStart}-${rangeEnd}）`
 }
 
-/** 根据指数区间返回对应的颜色函数 */
+/** 根據指數区間傳回對應的顏色函數 */
 export function getIndexColor(index: number): (text: string) => string {
   if (index <= 10) return chalk.green
   if (index <= 50) return chalk.yellow

@@ -3,9 +3,9 @@ import path from 'path'
 import { RepoInfo } from '../../types/git-types'
 
 /**
- * 交互式仓库选择器
- * @param repos 候选仓库列表
- * @returns 用户选择的仓库列表
+ * 交互式儲存庫選擇器
+ * @param repos 候選儲存庫列表
+ * @returns 使用者選擇的儲存庫列表
  */
 export async function promptRepoSelection(repos: RepoInfo[]): Promise<RepoInfo[]> {
   if (repos.length === 0) {
@@ -13,24 +13,24 @@ export async function promptRepoSelection(repos: RepoInfo[]): Promise<RepoInfo[]
   }
 
   if (repos.length === 1) {
-    console.log(chalk.blue('✅ 仅发现 1 个仓库，默认选中。'))
+    console.log(chalk.blue('✅ 僅發現 1 個儲存庫，預設選中。'))
     return repos
   }
 
-  // 动态导入 @inquirer/prompts
+  // 動態導入 @inquirer/prompts
   const { checkbox } = await import('@inquirer/prompts')
 
-  // 获取当前工作目录，用于计算相对路径
+  // 獲取目前工作目錄，用於計算相對路徑
   const cwd = process.cwd()
 
   const choices = repos.map((repo) => {
-    // 计算相对路径，如果无法计算则使用原路径
+    // 計算相對路徑，如果無法計算則使用原路徑
     let displayPath: string
     try {
       const relativePath = path.relative(cwd, repo.path)
-      // 如果相对路径比绝对路径短，则使用相对路径，否则使用绝对路径
+      // 如果相對路徑比絕對路徑短，則使用相對路徑，否則使用絕對路徑
       displayPath = relativePath.length < repo.path.length ? relativePath : repo.path
-      // 如果相对路径是空字符串，表示就是当前目录
+      // 如果相對路徑是空字符串，表示就是目前目錄
       if (displayPath === '') {
         displayPath = '.'
       }
@@ -45,12 +45,12 @@ export async function promptRepoSelection(repos: RepoInfo[]): Promise<RepoInfo[]
   })
 
   const selected = await checkbox({
-    message: '请选择需要分析的仓库（空格选择，回车确认）',
+    message: '請選擇需要分析的儲存庫（空格選擇，回車確認）',
     choices,
     pageSize: Math.min(10, choices.length),
     validate: (answer) => {
       if (answer.length === 0) {
-        return '请至少选择一个仓库'
+        return '請至少選擇一個儲存庫'
       }
       return true
     },

@@ -1,7 +1,7 @@
-// 分析和建议
+// 分析和建議
 export { printDetailedAnalysis } from './analysis'
 
-// 报表打印
+// 報表打印
 export {
   printCoreResults,
   printTimeDistribution,
@@ -11,5 +11,5 @@ export {
   printLateNightAnalysis,
 } from './printer'
 
-// 多仓库对比
+// 多儲存庫對比
 export { MultiComparisonPrinter } from './multi-comparison'

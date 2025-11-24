@@ -1,5 +1,5 @@
 /**
- * 时间统计粒度
+ * 時間統計粒度
  */
 export type TimeGranularity = 'hour' | 'half-hour'
 
@@ -7,27 +7,27 @@ export interface GitLogOptions {
   path: string
   since?: string
   until?: string
-  silent?: boolean // 静默模式，不打印日志
-  authorPattern?: string // 作者过滤正则（包含特定作者）
-  ignoreAuthor?: string // 排除作者正则（排除特定作者，如 bot|jenkins）
-  ignoreMsg?: string // 排除提交消息正则（排除特定消息，如 merge|lint）
-  timezone?: string // 时区过滤（例如: +0800, -0700），只采集指定时区的提交
+  silent?: boolean // 靜默模式，不打印日誌
+  authorPattern?: string // 作者過濾正則（包含特定作者）
+  ignoreAuthor?: string // 排除作者正則（排除特定作者，如 bot|jenkins）
+  ignoreMsg?: string // 排除提交消息正則（排除特定消息，如 merge|lint）
+  timezone?: string // 時區過濾（例如: +0800, -0700），只採集指定時區的提交
 }
 
 export interface GitLogData {
-  byHour: TimeCount[] // 时间分布数据（48个半小时点）
+  byHour: TimeCount[] // 時間分布資料（48個半小時点）
   byDay: TimeCount[]
   totalCommits: number
   dailyFirstCommits?: DailyFirstCommit[]
   dayHourCommits?: DayHourCommit[]
   dailyLatestCommits?: DailyLatestCommit[]
   dailyCommitHours?: DailyCommitHours[]
-  dailyCommitCounts?: DailyCommitCount[] // 每日提交数（用于判断工作日/周末）
-  contributors?: number // 参与人数
+  dailyCommitCounts?: DailyCommitCount[] // 每日提交數（用於判斷工作日/週末）
+  contributors?: number // 参與人數
   firstCommitDate?: string // 第一次提交日期
-  lastCommitDate?: string // 最后一次提交日期
-  granularity?: TimeGranularity // 时间粒度标识（默认 'half-hour'）
-  timezoneData?: TimezoneData // 时区分布数据
+  lastCommitDate?: string // 最後一次提交日期
+  granularity?: TimeGranularity // 時間粒度標識（預設 'half-hour'）
+  timezoneData?: TimezoneData // 時區分布資料
 }
 
 export interface TimeCount {
@@ -68,7 +68,7 @@ export interface ParsedGitData {
 
 export type WorkTimePl = [{ time: '工作' | '加班'; count: number }, { time: '工作' | '加班'; count: number }]
 
-export type WorkWeekPl = [{ time: '工作日' | '周末'; count: number }, { time: '工作日' | '周末'; count: number }]
+export type WorkWeekPl = [{ time: '工作日' | '週末'; count: number }, { time: '工作日' | '週末'; count: number }]
 
 export interface ValidationResult {
   isValid: boolean
@@ -94,40 +94,40 @@ export interface DailyFirstCommit {
 }
 
 /**
- * 每日最晚提交时间
+ * 每日最晚提交時間
  */
 export interface DailyLatestCommit {
   date: string
-  minutesFromMidnight: number // 最晚提交距离午夜的分钟数 (0-1439)
+  minutesFromMidnight: number // 最晚提交距離午夜的分鐘數 (0-1439)
 }
 
 /**
- * 每日提交小时列表
+ * 每日提交小時列表
  */
 export interface DailyCommitHours {
   date: string
-  hours: Set<number> // 该天所有提交的小时（去重）
+  hours: Set<number> // 該天所有提交的小時（去重）
 }
 
 /**
- * 每日提交数
+ * 每日提交數
  */
 export interface DailyCommitCount {
   date: string // 日期 (YYYY-MM-DD)
-  count: number // 提交数
+  count: number // 提交數
 }
 
 /**
- * 按星期几和小时的提交统计
+ * 按星期幾和小時的提交統計
  */
 export interface DayHourCommit {
-  weekday: number // 1-7 (周一到周日)
+  weekday: number // 1-7 (週一到週日)
   hour: number // 0-23
   count: number
 }
 
 /**
- * 工作日加班分布（周一到周五的下班后提交数）
+ * 工作日加班分布（週一到週五的下班後提交數）
  */
 export interface WeekdayOvertimeDistribution {
   monday: number
@@ -136,65 +136,65 @@ export interface WeekdayOvertimeDistribution {
   thursday: number
   friday: number
   peakDay?: string // 加班最多的一天
-  peakCount?: number // 加班最多的次数
+  peakCount?: number // 加班最多的次數
 }
 
 /**
- * 周末加班分布
+ * 週末加班分布
  */
 export interface WeekendOvertimeDistribution {
-  saturdayDays: number // 周六加班天数
-  sundayDays: number // 周日加班天数
-  casualFixDays: number // 临时修复天数（提交1-2次）
-  realOvertimeDays: number // 真正加班天数（提交>=3次）
+  saturdayDays: number // 週六加班天數
+  sundayDays: number // 週日加班天數
+  casualFixDays: number // 暫時修复天數（提交1-2次）
+  realOvertimeDays: number // 真正加班天數（提交>=3次）
 }
 
 /**
  * 深夜加班分析
  */
 export interface LateNightAnalysis {
-  evening: number // 下班后-21:00 晚间提交
+  evening: number // 下班後-21:00 晚間提交
   lateNight: number // 21:00-23:00 加班晚期
   midnight: number // 23:00-02:00 深夜加班
   dawn: number // 02:00-06:00 凌晨提交
-  midnightDays: number // 有深夜/凌晨提交的天数
-  totalWorkDays: number // 总工作日天数
+  midnightDays: number // 有深夜/凌晨提交的天數
+  totalWorkDays: number // 總工作日天數
   midnightRate: number // 深夜加班占比 (%)
-  totalWeeks: number // 总周数
-  totalMonths: number // 总月数
+  totalWeeks: number // 總週數
+  totalMonths: number // 總月數
 }
 
 /**
- * 每日工作跨度数据
+ * 每日工作跨度資料
  */
 export interface DailyWorkSpan {
   date: string // 日期 (YYYY-MM-DD)
-  firstCommitMinutes: number // 首次提交距离午夜的分钟数
-  lastCommitMinutes: number // 最后提交距离午夜的分钟数
-  spanHours: number // 工作跨度（小时）
-  commitCount: number // 当天提交数
+  firstCommitMinutes: number // 首次提交距離午夜的分鐘數
+  lastCommitMinutes: number // 最後提交距離午夜的分鐘數
+  spanHours: number // 工作跨度（小時）
+  commitCount: number // 當天提交數
 }
 
 /**
- * 月度趋势数据
+ * 月度趨勢資料
  */
 export interface MonthlyTrendData {
   month: string // 月份 (YYYY-MM)
-  index996: number // 996指数
-  avgWorkSpan: number // 平均工作跨度（小时）
-  workSpanStdDev: number // 工作跨度标准差（小时）
-  avgStartTime: string // 平均开始工作时间 (HH:mm)
-  avgEndTime: string // 平均结束工作时间 (HH:mm)
-  latestEndTime: string // 最晚结束时间 (HH:mm)
-  totalCommits: number // 总提交数
-  contributors: number // 参与人数
-  workDays: number // 工作天数
-  dataQuality: 'sufficient' | 'limited' | 'insufficient' // 数据质量标记
+  index996: number // 996指數
+  avgWorkSpan: number // 平均工作跨度（小時）
+  workSpanStdDev: number // 工作跨度標準差（小時）
+  avgStartTime: string // 平均開始工作時間 (HH:mm)
+  avgEndTime: string // 平均結束工作時間 (HH:mm)
+  latestEndTime: string // 最晚結束時間 (HH:mm)
+  totalCommits: number // 總提交數
+  contributors: number // 参與人數
+  workDays: number // 工作天數
+  dataQuality: 'sufficient' | 'limited' | 'insufficient' // 資料品質標記
   confidence: 'high' | 'medium' | 'low' // 置信度等级
 }
 
 /**
- * 趋势分析结果
+ * 趨勢分析結果
  */
 export interface TrendAnalysisResult {
   monthlyData: MonthlyTrendData[]
@@ -206,14 +206,14 @@ export interface TrendAnalysisResult {
     totalMonths: number
     avgIndex996: number
     avgWorkSpan: number
-    trend: 'increasing' | 'decreasing' | 'stable' // 整体趋势
+    trend: 'increasing' | 'decreasing' | 'stable' // 整體趨勢
   }
 }
 
-// ====== 以下是多仓库功能的新增类型 ======
+// ====== 以下是多儲存庫功能的新增類型 ======
 
 /**
- * 仓库信息
+ * 儲存庫資訊
  */
 export interface RepoInfo {
   name: string
@@ -221,7 +221,7 @@ export interface RepoInfo {
 }
 
 /**
- * 仓库分析记录（用于对比表）
+ * 儲存庫分析記錄（用於對比表）
  */
 export interface RepoAnalysisRecord {
   repo: RepoInfo
@@ -229,11 +229,11 @@ export interface RepoAnalysisRecord {
   result: Result996
   status: 'success' | 'failed'
   error?: string
-  classification?: any // 项目分类结果（ProjectClassificationResult）
+  classification?: any // 專案分類結果（ProjectClassificationResult）
 }
 
 /**
- * Analyze 命令的选项（同时用于多仓库分析）
+ * Analyze 命令的選項（同時用於多儲存庫分析）
  */
 export interface AnalyzeOptions {
   since?: string
@@ -242,18 +242,19 @@ export interface AnalyzeOptions {
   year?: string
   self?: boolean
   hours?: string
-  halfHour?: boolean // 是否以半小时粒度展示
-  trend?: boolean // 是否显示月度趋势分析
-  ignoreAuthor?: string // 排除作者正则
-  ignoreMsg?: string // 排除提交消息正则
-  timezone?: string // 指定时区进行分析 (例如: +0800, -0700)
-  skipUserAnalysis?: boolean // 是否跳过团队工作模式分析
-  maxUsers?: number // 最大分析用户数（默认30）
-  cn?: boolean // 强制开启中国节假日调休模式
+  halfHour?: boolean // 是否以半小時粒度展示
+  trend?: boolean // 是否顯示月度趨勢分析
+  author?: string // 指定作者正則（只包含特定作者）
+  ignoreAuthor?: string // 排除作者正則
+  ignoreMsg?: string // 排除提交消息正則
+  timezone?: string // 指定時區進行分析 (例如: +0800, -0700)
+  skipUserAnalysis?: boolean // 是否跳過團隊工作模式分析
+  maxUsers?: number // 最大分析使用者數（預設30）
+  cn?: boolean // 強制開啟中國節假日調休模式
 }
 
 /**
- * 时区数据
+ * 時區資料
  */
 export interface TimezoneData {
   totalCommits: number
@@ -261,84 +262,84 @@ export interface TimezoneData {
 }
 
 /**
- * 跨时区分析结果
+ * 跨時區分析結果
  */
 export interface TimezoneAnalysisResult {
-  isCrossTimezone: boolean // 是否为跨时区项目
-  crossTimezoneRatio: number // 非主导时区的占比 (0-1)
-  dominantTimezone: string | null // 主导时区，如 "+0800"
-  dominantRatio: number // 主导时区占比 (0-1)
-  sleepPeriodRatio: number // 睡眠时段（连续5小时最少）的提交占比 (0-1)
-  confidence: number // 检测置信度 (0-100)
-  warning?: string // 警告信息
-  timezoneGroups?: Array<{ offset: string; count: number; ratio: number }> // 时区分组详情
+  isCrossTimezone: boolean // 是否為跨時區專案
+  crossTimezoneRatio: number // 非主導時區的占比 (0-1)
+  dominantTimezone: string | null // 主導時區，如 "+0800"
+  dominantRatio: number // 主導時區占比 (0-1)
+  sleepPeriodRatio: number // 睡眠時段（連續5小時最少）的提交占比 (0-1)
+  confidence: number // 檢測置信度 (0-100)
+  warning?: string // 警告資訊
+  timezoneGroups?: Array<{ offset: string; count: number; ratio: number }> // 時區分組詳情
 }
 
-// ====== 以下是团队工作模式分析的新增类型 ======
+// ====== 以下是團隊工作模式分析的新增類型 ======
 
 /**
- * 工作强度等级
+ * 工作強度等级
  */
 export type WorkIntensityLevel = 'normal' | 'moderate' | 'heavy'
 
 /**
- * 个人工作模式
+ * 個人工作模式
  */
 export interface UserWorkPattern {
   author: string // 作者名
-  email: string // 邮箱
-  totalCommits: number // 提交数
+  email: string // 郵箱
+  totalCommits: number // 提交數
   commitPercentage: number // 占比（百分比）
-  timeDistribution: TimeCount[] // 个人的时间分布（24小时）
-  workingHours?: WorkTimeDetectionResult // 个人的上下班时间（算法识别）
-  // 基于每日首末commit的中位数
-  avgStartTimeMedian?: number // 平均上班时间（中位数，小时数）
-  avgEndTimeMedian?: number // 平均下班时间（中位数，小时数）
-  validDays?: number // 有效天数（用于判断数据可靠性）
-  index996?: number // 个人的996指数
+  timeDistribution: TimeCount[] // 個人的時間分布（24小時）
+  workingHours?: WorkTimeDetectionResult // 個人的上下班時間（算法識別）
+  // 基於每日首末commit的中位數
+  avgStartTimeMedian?: number // 平均上班時間（中位數，小時數）
+  avgEndTimeMedian?: number // 平均下班時間（中位數，小時數）
+  validDays?: number // 有效天數（用於判斷資料可靠性）
+  index996?: number // 個人的996指數
   overtimeStats?: {
-    workdayOvertime: number // 工作日加班提交数
-    weekendOvertime: number // 周末加班提交数
-    totalOvertime: number // 总加班提交数
+    workdayOvertime: number // 工作日加班提交數
+    weekendOvertime: number // 週末加班提交數
+    totalOvertime: number // 總加班提交數
   }
-  intensityLevel?: WorkIntensityLevel // 工作强度等级
+  intensityLevel?: WorkIntensityLevel // 工作強度等级
 }
 
 /**
- * 团队分析结果
+ * 團隊分析結果
  */
 export interface TeamAnalysis {
-  coreContributors: UserWorkPattern[] // 核心贡献者（过滤后）
-  totalAnalyzed: number // 实际分析的用户数
-  totalContributors: number // 总贡献者数
-  filterThreshold: number // 过滤阈值（提交数）
-  baselineEndHour: number // 团队基准下班时间（P50中位数）
+  coreContributors: UserWorkPattern[] // 核心貢獻者（過濾後）
+  totalAnalyzed: number // 實際分析的使用者數
+  totalContributors: number // 總貢獻者數
+  filterThreshold: number // 過濾閾值（提交數）
+  baselineEndHour: number // 團隊基準下班時間（P50中位數）
 
-  // 工作强度分布
+  // 工作強度分布
   distribution: {
-    normal: UserWorkPattern[] // 正常作息（基准下班时间之前）
-    moderate: UserWorkPattern[] // 适度加班（基准+0到+2小时）
-    heavy: UserWorkPattern[] // 严重加班（基准+2小时之后）
+    normal: UserWorkPattern[] // 正常作息（基準下班時間之前）
+    moderate: UserWorkPattern[] // 適度加班（基準+0到+2小時）
+    heavy: UserWorkPattern[] // 嚴重加班（基準+2小時之後）
   }
 
-  // 统计指标
+  // 統計指標
   statistics: {
-    median996: number // 中位数996指数
-    mean996: number // 平均996指数
-    range: [number, number] // 996指数范围 [最小, 最大]
+    median996: number // 中位數996指數
+    mean996: number // 平均996指數
+    range: [number, number] // 996指數範圍 [最小, 最大]
     percentiles: {
-      p25: number // 25%分位数
-      p50: number // 50%分位数（中位数）
-      p75: number // 75%分位数
-      p90: number // 90%分位数
+      p25: number // 25%分位數
+      p50: number // 50%分位數（中位數）
+      p75: number // 75%分位數
+      p90: number // 90%分位數
     }
   }
 
-  // 健康度评估
+  // 健康度評估
   healthAssessment: {
-    overallIndex: number // 项目整体996指数
-    teamMedianIndex: number // 团队中位数996指数
-    conclusion: string // 结论文本
-    warning?: string // 警告信息
+    overallIndex: number // 專案整體996指數
+    teamMedianIndex: number // 團隊中位數996指數
+    conclusion: string // 結论文本
+    warning?: string // 警告資訊
   }
 }
