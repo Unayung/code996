@@ -27,7 +27,7 @@ export interface ProjectClassificationResult {
       }
     }
     weekendActivity: {
-      ratio: number // 週末活跃度 (0-1)
+      ratio: number // 週末活躍度 (0-1)
       description: string
     }
     moonlightingPattern: {
@@ -59,7 +59,7 @@ export class ProjectClassifier {
     // 維度1: 工作時間規律性（最重要，可單独判定）
     const regularityResult = this.detectWorkTimeRegularity(rawData.byHour, rawData.byDay, rawData.dayHourCommits)
 
-    // 維度2: 週末活跃度
+    // 維度2: 週末活躍度
     const weekendResult = this.detectWeekendActivity(parsedData.workWeekPl)
 
     // 維度3: 月光族模式
@@ -296,7 +296,7 @@ export class ProjectClassifier {
   }
 
   /**
-   * 維度2: 檢測週末活跃度
+   * 維度2: 檢測週末活躍度
    */
   private static detectWeekendActivity(
     workWeekPl: ParsedGitData['workWeekPl']
@@ -316,11 +316,11 @@ export class ProjectClassifier {
 
     let description = ''
     if (ratio >= 0.30) {
-      description = `${(ratio * 100).toFixed(1)}% (很高週末活跃度)`
+      description = `${(ratio * 100).toFixed(1)}% (很高週末活躍度)`
     } else if (ratio >= 0.15) {
-      description = `${(ratio * 100).toFixed(1)}% (高週末活跃度)`
+      description = `${(ratio * 100).toFixed(1)}% (高週末活躍度)`
     } else {
-      description = `${(ratio * 100).toFixed(1)}% (低週末活跃度)`
+      description = `${(ratio * 100).toFixed(1)}% (低週末活躍度)`
     }
 
     return {
@@ -366,11 +366,11 @@ export class ProjectClassifier {
     if (nightRatio >= 0.40) {
       description = `晚間高度活跃 (${(nightRatio * 100).toFixed(1)}%)`
     } else if (nightRatio >= 0.30) {
-      description = `晚間活跃度較高 (${(nightRatio * 100).toFixed(1)}%)`
+      description = `晚間活躍度較高 (${(nightRatio * 100).toFixed(1)}%)`
     } else if (nightRatio >= 0.25) {
       description = `晚間活跃 (${(nightRatio * 100).toFixed(1)}%)`
     } else {
-      description = `晚間活跃度低 (${(nightRatio * 100).toFixed(1)}%)`
+      description = `晚間活躍度低 (${(nightRatio * 100).toFixed(1)}%)`
     }
 
     return {
@@ -435,22 +435,22 @@ export class ProjectClassifier {
     // 貢獻者數量（20-49人給予適度加分）
     if (contributorsCount >= 20 && contributorsCount < 50) {
       ossScore += 20
-      reasons.push(`貢獻者较多 (${contributorsCount} 人)`)
+      reasons.push(`貢獻者較多 (${contributorsCount} 人)`)
     } else if (contributorsCount >= 10 && contributorsCount < 20) {
       ossScore += 10
       reasons.push(`貢獻者數量中等 (${contributorsCount} 人)`)
     }
 
-    // 週末活跃度分析
+    // 週末活躍度分析
     if (weekend.ratio >= 0.30) {
       ossScore += 30
-      reasons.push(`週末活跃度高 (${(weekend.ratio * 100).toFixed(1)}%)`)
+      reasons.push(`週末活躍度高 (${(weekend.ratio * 100).toFixed(1)}%)`)
     } else if (weekend.ratio >= 0.20) {
       ossScore += 20
-      reasons.push(`週末活跃度較高 (${(weekend.ratio * 100).toFixed(1)}%)`)
+      reasons.push(`週末活躍度較高 (${(weekend.ratio * 100).toFixed(1)}%)`)
     } else if (weekend.ratio >= 0.15) {
       ossScore += 10
-      reasons.push(`週末活跃度中等 (${(weekend.ratio * 100).toFixed(1)}%)`)
+      reasons.push(`週末活躍度中等 (${(weekend.ratio * 100).toFixed(1)}%)`)
     }
 
     // 月光族模式

@@ -103,7 +103,7 @@ export function printWeekendOvertime(parsedData: ParsedGitData): void {
   console.log(
     `  真正加班: ${realOvertimeColor(chalk.bold(weekend.realOvertimeDays.toString()))}天 (提交時間跨度>=3小時)`
   )
-  console.log(`  暫時修复: ${chalk.gray(weekend.casualFixDays.toString())}天 (提交時間跨度<3小時)`)
+  console.log(`  暫時修復: ${chalk.gray(weekend.casualFixDays.toString())}天 (提交時間跨度<3小時)`)
   console.log(`  加班占比: ${realOvertimeColor(((weekend.realOvertimeDays / totalWorkDays) * 100).toFixed(1) + '%')}`)
   console.log()
 }

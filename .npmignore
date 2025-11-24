@@ -1,64 +1,69 @@
-# TypeScript 源代码
+# 原始碼（只發佈編譯後的 dist/）
 src/
 *.ts
+!*.d.ts
 
-# TypeScript 声明文件 (排除所有 .d.ts，因为运行时不需要)
-*.d.ts
-
-# 只保留必要的 JavaScript 文件
-!dist/**/*.js
-
-# Source maps
-*.map
-
-# 构建配置
-tsconfig.json
-tsconfig.build.json
-jest.config.js
-.prettierrc.mjs
-
-# 测试文件
-**/*.test.ts
-**/*.spec.ts
+# 測試相關
 __tests__/
-tests/
+*.test.ts
+*.spec.ts
+coverage/
+.nyc_output/
 
-# 开发工具配置
-.eslintrc*
-.prettierrc*
-.stylelintrc*
-
-# 文档和说明
-.docs/
-*.md
-!README.md
-.cursor/
-.claude/
-public/
-
-# Git 相关
-.git
-.gitignore
-.gitattributes
-
-# IDE 配置
+# 開發工具配置
 .vscode/
 .idea/
+.claude/
 *.swp
 *.swo
 *~
 
-# 操作系统文件
-.DS_Store
-.Thumbs.db
-desktop.ini
+# TypeScript
+tsconfig.json
+tsconfig.*.json
 
-# Node.js 相关
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+circle.yml
+
+# 文件（保留 README.md 和 LICENSE）
+.docs/
+docs/
+*.md
+!README.md
+
+# 其他
 node_modules/
+.DS_Store
+Thumbs.db
+.env
+.env.*
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# 其他构建产物
-dist/**/*.map
-dist/**/*.d.ts.map
+# 編輯器和 IDE
+.editorconfig
+.prettierrc*
+.prettierignore
+.eslintrc*
+.eslintignore
+
+# 腳本（保留在原始碼即可）
+bin/
+
+# 圖片和媒體
+public/
+images/
+*.png
+*.jpg
+*.gif
+*.svg

@@ -13,5 +13,6 @@ export function printGlobalNotices(): void {
   console.log('  ● 命令說明：使用 code996 help 查看更多命令。')
   console.log()
   console.log(`  其他說明請參考 Github：${chalk.cyan.bold('https://github.com/hellodigua/code996')}`)
+  console.log(`  繁體中文 fork Github：${chalk.cyan.bold('https://github.com/unayung/code996')}`)
   console.log()
 }

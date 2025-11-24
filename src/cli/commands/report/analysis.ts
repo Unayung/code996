@@ -38,7 +38,7 @@ export function printDetailedAnalysis(result: Result996, parsedData: ParsedGitDa
     if (weekdayMax > 50) {
       analysis.push(`⚠️ 工作日加班頻繁，${parsedData.weekdayOvertime.peakDay}是加班高峰（${weekdayMax}次提交）`)
     } else if (weekdayMax > 20) {
-      analysis.push(`📊 工作日有一定加班，${parsedData.weekdayOvertime.peakDay}加班相對较多（${weekdayMax}次提交）`)
+      analysis.push(`📊 工作日有一定加班，${parsedData.weekdayOvertime.peakDay}加班相對較多（${weekdayMax}次提交）`)
     }
   }
 
@@ -48,11 +48,11 @@ export function printDetailedAnalysis(result: Result996, parsedData: ParsedGitDa
     if (weekend.realOvertimeDays > 15) {
       analysis.push(`⚠️ 週末加班嚴重（${weekend.realOvertimeDays}天真正加班），工作侵占休息時間`)
     } else if (weekend.realOvertimeDays > 8) {
-      analysis.push(`📅 週末有较多加班（${weekend.realOvertimeDays}天），需警惕！`)
+      analysis.push(`📅 週末有較多加班（${weekend.realOvertimeDays}天），需警惕！`)
     } else if (weekend.realOvertimeDays > 0) {
-      analysis.push(`📝 偶有週末加班（${weekend.realOvertimeDays}天），大部分是暫時修复`)
+      analysis.push(`📝 偶有週末加班（${weekend.realOvertimeDays}天），大部分是暫時修復`)
     } else if (weekend.casualFixDays > 0) {
-      analysis.push(`✅ 週末基本無加班，僅${weekend.casualFixDays}天暫時修复`)
+      analysis.push(`✅ 週末基本無加班，僅${weekend.casualFixDays}天暫時修復`)
     }
   }
 
@@ -70,7 +70,7 @@ export function printDetailedAnalysis(result: Result996, parsedData: ParsedGitDa
     }
 
     if (lateNight.midnightRate > 10) {
-      analysis.push(`⚠️ ${lateNight.midnightRate.toFixed(1)}% 的工作日有深夜/凌晨提交，需警惕健康风险`)
+      analysis.push(`⚠️ ${lateNight.midnightRate.toFixed(1)}% 的工作日有深夜/凌晨提交，需警惕健康風險`)
     }
   }
 

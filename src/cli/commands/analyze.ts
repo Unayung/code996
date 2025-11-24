@@ -415,7 +415,7 @@ function printOpenSourceProjectWarning(classification: ReturnType<typeof Project
   const regularityEmoji = getRegularityEmoji(dimensions.workTimeRegularity.score)
   const regularityText = `${dimensions.workTimeRegularity.score}/100 ${regularityEmoji} (${dimensions.workTimeRegularity.description})`
 
-  // 週末活跃度
+  // 週末活躍度
   const weekendPercent = (dimensions.weekendActivity.ratio * 100).toFixed(1)
   const weekendEmoji = getWeekendEmoji(dimensions.weekendActivity.ratio)
   const weekendText = `${weekendPercent}% ${weekendEmoji} (${dimensions.weekendActivity.description})`
@@ -438,7 +438,7 @@ function printOpenSourceProjectWarning(classification: ReturnType<typeof Project
       { content: chalk.yellow(contributorsText), colSpan: 1 },
     ],
     [
-      { content: chalk.yellow(chalk.bold('週末活跃度')), colSpan: 1 },
+      { content: chalk.yellow(chalk.bold('週末活躍度')), colSpan: 1 },
       { content: chalk.yellow(weekendText), colSpan: 1 },
     ],
     [
@@ -466,11 +466,11 @@ function getRegularityEmoji(score: number): string {
   return '❌' // 低規律性
 }
 
-/** 獲取週末活跃度 emoji */
+/** 獲取週末活躍度 emoji */
 function getWeekendEmoji(ratio: number): string {
-  if (ratio >= 0.3) return '🔥' // 很高週末活跃度
-  if (ratio >= 0.15) return '⚠️' // 高週末活跃度
-  return '✅' // 低週末活跃度
+  if (ratio >= 0.3) return '🔥' // 很高週末活躍度
+  if (ratio >= 0.15) return '⚠️' // 高週末活躍度
+  return '✅' // 低週末活躍度
 }
 
 /** 輸出核心結果、時間分布與統計資訊 */
